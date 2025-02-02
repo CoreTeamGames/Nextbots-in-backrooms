@@ -38,8 +38,8 @@ public class BackroomsGeneratorUI : MonoBehaviour
             return;
 
         int mazeSize = (int)_mazeSizeSlider.value * 100;
-        int numMazes = mazeSize * 10;
-        int rooms = mazeSize / 10;
+        int numMazes = mazeSize * (int)_mazeSizeSlider.value * 14;
+        int rooms = mazeSize / 15;
 
         await _generator.Generate(numMazes, _stopCollisionProbality, mazeSize, rooms);
 
@@ -54,6 +54,12 @@ public class BackroomsGeneratorUI : MonoBehaviour
         Texture2D t = new Texture2D(1, 1);
 
         t = _generator.LoadMaze(_generator.FileName);
+
+        if (t == null)
+        {
+            CreateMaze();
+            return;
+        }
 
         Sprite s = Sprite.Create(t, new Rect(0, 0, t.width, t.height), Vector2.one * 0.5f);
         _maze.sprite = s;
