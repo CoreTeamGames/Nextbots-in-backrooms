@@ -6,30 +6,33 @@ public class LevelManager : MonoBehaviour
 {
     [SerializeField] private int _minSecsToStartGame, _maxSecsToStartGame, _maxSpawnAttempts, _minDistantionFromPlayer;
     [SerializeField] private float _timeToStartGame;
-    [SerializeField] private NextbotPlacer _placer;
     [SerializeField] private GameObject _shotgunPrefab;
-    [SerializeField] private MazeLoaderOptimized _loader;
     [SerializeField] private GameObject _player;
+
+    [SerializeField] private MazeLoaderOptimized _loader;
+    [SerializeField] private NextbotPlacer _nextbotPlacer;
+    [SerializeField] private PlayerSpawner _playerSpawner;
+    [SerializeField] private NavmeshCreator _navmeshCreator;
+
     private bool _isGameStarted = false;
-    private Texture2D _mazeImage;
+    public Texture2D MazeImage { get; private set; }
 
     public void Initialize()
     {
         _timeToStartGame = Time.time + Random.Range(_minSecsToStartGame, _maxSecsToStartGame);
 
-
-        _mazeImage = _loader.MazeImage;
+        MazeImage = _loader.MazeImage;
 
         // Получаем пиксели изображения
-        Color[] pixels = _mazeImage.GetPixels();
-        Color[,] map = new Color[_mazeImage.width, _mazeImage.height];
+        Color[] pixels = MazeImage.GetPixels();
+        Color[,] map = new Color[MazeImage.width, MazeImage.height];
 
         // Проходим по пикселям и создаем объекты
-        for (int _y = 0; _y < _mazeImage.height; _y++)
+        for (int _y = 0; _y < MazeImage.height; _y++)
         {
-            for (int _x = 0; _x < _mazeImage.width; _x++)
+            for (int _x = 0; _x < MazeImage.width; _x++)
             {
-                map[_x, _y] = pixels[_y * _mazeImage.width + _x];
+                map[_x, _y] = pixels[_y * MazeImage.width + _x];
             }
         }
 
@@ -54,7 +57,7 @@ public class LevelManager : MonoBehaviour
         if (Time.time >= _timeToStartGame && !_isGameStarted)
         {
             _isGameStarted = true;
-            _placer.CreateNextbots();
+            _nextbotPlacer.CreateNextbots();
         }    
     }
 }

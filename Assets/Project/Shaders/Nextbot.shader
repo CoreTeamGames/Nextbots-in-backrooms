@@ -13,7 +13,8 @@
 
         Pass
         {
-            // Включаем прозрачность
+            // Включаем прозрачность и отключаем отсечение граней
+            Cull Off
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
 
