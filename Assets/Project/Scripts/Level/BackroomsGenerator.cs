@@ -48,56 +48,6 @@ public class BackroomsGenerator : MonoBehaviour
         }
     }
 
-    private void GenerateSpawnPoints()
-    {
-        spawnPoints.Clear();
-        int minDistance = 20; // Минимальное расстояние между точками появления
-        int attempts = 0;
-        int maxAttempts = 1000;
-
-        while (spawnPoints.Count < mazeSize / 10 && attempts < maxAttempts)
-        {
-            int x = random.Next(10, NUM_COLS - 10);
-            int y = random.Next(10, NUM_ROWS - 10);
-
-            // Проверяем, что точка находится в проходе
-            if (maze[y, x].Visited)
-            {
-                // Проверяем достаточно ли места вокруг точки
-                bool hasEnoughSpace = true;
-                for (int dy = -1; dy <= 1; dy++)
-                {
-                    for (int dx = -1; dx <= 1; dx++)
-                    {
-                        if (!maze[y + dy, x + dx].Visited)
-                        {
-                            hasEnoughSpace = false;
-                            break;
-                        }
-                    }
-                }
-
-                // Проверяем расстояние до других точек появления
-                bool isFarEnough = true;
-                foreach (var point in spawnPoints)
-                {
-                    double distance = Math.Sqrt(Math.Pow(point.x - x, 2) + Math.Pow(point.y - y, 2));
-                    if (distance < minDistance)
-                    {
-                        isFarEnough = false;
-                        break;
-                    }
-                }
-
-                if (hasEnoughSpace && isFarEnough)
-                {
-                    spawnPoints.Add((x, y));
-                }
-            }
-            attempts++;
-        }
-    }
-
     private void CreateBorderWalls()
     {
         int wallThickness = 3; // Толщина стен
@@ -347,20 +297,6 @@ public class BackroomsGenerator : MonoBehaviour
                         }
                     }
                 }
-
-                // Рисуем точки появления
-                foreach (var point in spawnPoints)
-                {
-                    using (SolidBrush brush = new SolidBrush(Color.FromArgb(0, 255, 0)))
-                    {
-                        // Рисуем точку появления размером 3x3 пикселя
-                        g.FillRectangle(brush,
-                            point.x * _cellSize - 1,
-                            point.y * _cellSize - 1,
-                            3,
-                            3);
-                    }
-                }
             }
             bmp.Save(Application.persistentDataPath + "/" + _fileName + ".png", ImageFormat.Png);
         }
@@ -405,8 +341,6 @@ public class BackroomsGenerator : MonoBehaviour
         await Task.Run(GenerateMaze);
         OnMapCreateStateChangedEvent?.Invoke("generateRooms");
         await Task.Run(GenerateRooms);
-        OnMapCreateStateChangedEvent?.Invoke("generateSpawnpoints");
-        await Task.Run(GenerateSpawnPoints);
         OnMapCreateStateChangedEvent?.Invoke("saveFile");
         SaveToPng();
         OnMapCreatedEvent?.Invoke();

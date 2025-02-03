@@ -23,7 +23,7 @@ public class PlayerSpawner : MonoBehaviour
         }
     }
 
-    public void SpawnPlayer(bool canSpawnTogether = true)
+    public void SpawnPlayers(bool canSpawnTogether = true)
     {
         if (_players.Length == 0 || _manager == null)
         {
@@ -55,6 +55,7 @@ public class PlayerSpawner : MonoBehaviour
                 _players[i].GetComponent<CharacterController>().enabled = true;
 
                 isSpawned = true;
+                break;
             }
 
             if (isSpawned)
@@ -81,7 +82,7 @@ public class PlayerSpawner : MonoBehaviour
     {
         if (Keyboard.current.f1Key.isPressed)
         {
-            SpawnPlayer();
+            SpawnPlayers();
         }
     }
 }

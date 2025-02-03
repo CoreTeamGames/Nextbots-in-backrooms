@@ -38,8 +38,8 @@ public class BackroomsGeneratorUI : MonoBehaviour
             return;
 
         int mazeSize = (int)_mazeSizeSlider.value * 100;
-        int numMazes = mazeSize * (int)_mazeSizeSlider.value * 14;
-        int rooms = mazeSize / 15;
+        int numMazes = mazeSize * (int)_mazeSizeSlider.value * 5;
+        int rooms = mazeSize / 20;
 
         await _generator.Generate(numMazes, _stopCollisionProbality, mazeSize, rooms);
 

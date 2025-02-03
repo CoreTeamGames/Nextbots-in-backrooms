@@ -5024,6 +5024,50 @@ Transform:
   m_Father: {fileID: 2058109415}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 90.00001, y: 0, z: -89.997}
+--- !u!1 &559379839
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 559379841}
+  - component: {fileID: 559379840}
+  m_Layer: 0
+  m_Name: NavMeshCreator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &559379840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559379839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b014ae47cfc9dc940b86f44aadbe01e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _navMeshSurface: {fileID: 45018878}
+--- !u!4 &559379841
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559379839}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 12
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &596996063
 GameObject:
   m_ObjectHideFlags: 0
@@ -5054,34 +5098,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c18ab5ffed6ed9d4dbc867a8c1b64b67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mazeImage: {fileID: 0}
   _floorMaterial: {fileID: 2100000, guid: 20ad0e2944911594ab6bdd19e79d077a, type: 2}
   _ceilingMaterial: {fileID: 2100000, guid: c75aa1bcd466bfb46b23d74cd1825015, type: 2}
   _wallMaterial: {fileID: 2100000, guid: 7e9931e5f13db034fa1ddbaabfb8ae9d, type: 2}
-  wallsRoot: {fileID: 0}
-  spawnPointsRoot: {fileID: 0}
+  wallHeight: 4
+  _countOfMeshesInCombinedMesh: 500
   _lampPrefab: {fileID: 1898430548923371722, guid: d8722b22e4ec9407a9ce9a3c52327806,
     type: 3}
-  wallHeight: 4
-  filename: backrooms.png
-  _countOfMeshesInCombinedMesh: 500
-  _spawner: {fileID: 596996066}
   _lampOffset: 10
-  _surface: {fileID: 45018878}
-  _onMazeCreated:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1627902347}
-        m_MethodName: Initialize
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!4 &596996065
 Transform:
   m_ObjectHideFlags: 0
@@ -5108,8 +5132,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 484fe83c4311a844a82cc9d74b2f44e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _spawnPoints: []
-  _player: {fileID: 0}
+  _players: []
+  _manager: {fileID: 0}
+  _maxSpawnAttempts: 20
 --- !u!1 &612752187
 GameObject:
   m_ObjectHideFlags: 0
@@ -5561,10 +5586,20 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3728584532136905712, guid: 37c76d0376c05917aa9f1905bff24697,
+        type: 3}
+      propertyPath: near clip plane
+      value: 0.01
+      objectReference: {fileID: 0}
     - target: {fileID: 3728584532481543264, guid: 37c76d0376c05917aa9f1905bff24697,
         type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 3728584532481543266, guid: 37c76d0376c05917aa9f1905bff24697,
+        type: 3}
+      propertyPath: m_Radius
+      value: 0.35
       objectReference: {fileID: 0}
     - target: {fileID: 3728584532481543267, guid: 37c76d0376c05917aa9f1905bff24697,
         type: 3}
@@ -5620,6 +5655,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3728584532787605863, guid: 37c76d0376c05917aa9f1905bff24697,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3728584532787605863, guid: 37c76d0376c05917aa9f1905bff24697,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 4806692771327308378, guid: 37c76d0376c05917aa9f1905bff24697,
         type: 3}
@@ -5847,11 +5892,15 @@ MonoBehaviour:
   _maxSpawnAttempts: 40
   _minDistantionFromPlayer: 50
   _timeToStartGame: 0
-  _placer: {fileID: 1234311521}
+  _filename: backrooms.png
   _shotgunPrefab: {fileID: 204323036791759997, guid: 5f87a236f8962724ab7b928c4342b09a,
     type: 3}
-  _loader: {fileID: 596996064}
   _player: {fileID: 1324894533}
+  _loader: {fileID: 596996064}
+  _objectSpawner: {fileID: 0}
+  _nextbotPlacer: {fileID: 0}
+  _playerSpawner: {fileID: 0}
+  _navmeshCreator: {fileID: 0}
 --- !u!4 &1627902348
 Transform:
   m_ObjectHideFlags: 0
@@ -5865,6 +5914,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1689611035
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1689611037}
+  - component: {fileID: 1689611036}
+  m_Layer: 0
+  m_Name: ObjectSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1689611036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689611035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d1dd966a51829c4cba9acdc46871d7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _shotgunPrefab: {fileID: 204323036791759997, guid: 5f87a236f8962724ab7b928c4342b09a,
+    type: 3}
+  _maxSpawnAttempts: 40
+  _minDistantionFromPlayer: 30
+--- !u!4 &1689611037
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689611035}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1794643639
 GameObject:

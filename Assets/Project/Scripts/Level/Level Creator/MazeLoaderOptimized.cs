@@ -1,116 +1,236 @@
-using UnityEngine;
 using System.Collections.Generic;
-using System.IO;
-using UnityEngine.AI;
-using System.Threading.Tasks;
-using UnityEngine.Events;
+using UnityEngine;
 
 public class MazeLoaderOptimized : MonoBehaviour
 {
-    [SerializeField] private Texture2D _mazeImage;
+    [Header("Materials Set-Up")]
     [SerializeField] private Material _floorMaterial;
     [SerializeField] private Material _ceilingMaterial;
     [SerializeField] private Material _wallMaterial;
-    [SerializeField] private GameObject wallsRoot;
-    [SerializeField] private GameObject spawnPointsRoot;
-    [SerializeField] private GameObject _lampPrefab;
+    [Header("Walls Set-Up")]
     [SerializeField] private float wallHeight = 1f;
-    [SerializeField] private string filename = "backrooms.png";
     [SerializeField] private int _countOfMeshesInCombinedMesh = 100;
-    [SerializeField] private PlayerSpawner _spawner;
+    [Header("Lamp Set-Up")]
+    [SerializeField] private GameObject _lampPrefab;
     [SerializeField] private int _lampOffset = 10;
-    [SerializeField] private NavMeshSurface _surface;
-    [SerializeField] private UnityEvent _onMazeCreated;
+
+    private GameObject wallsRoot;
+    private Texture2D _mazeImage;
+    private LevelManager _manager;
+    private bool _isInitialized = false;
+
+    public delegate void OnInitializationComplete();
+    public OnInitializationComplete OnInitializationCompleteEvent;
+
+    public delegate void OnMazeCreationStart();
+    public OnMazeCreationStart OnMazeCreationStartEvent;
+
+    public delegate void OnMazeCreationEnd();
+    public OnMazeCreationEnd OnMazeCreationEndEvent;
 
     public Texture2D MazeImage => _mazeImage;
 
-    private void Start()
+    private void Start() => Initialize();
+
+    public void Initialize()
     {
-        LoadImage(Application.persistentDataPath + "/" + filename);
-        wallsRoot = new GameObject("Walls Root");
-        spawnPointsRoot = new GameObject("Spawn Points Root");
-        GenerateMaze();
+        _manager = FindObjectOfType<LevelManager>();
+
+        if (_manager == null)
+        {
+            Debug.LogError($"Can{"'"}t find Level Manager on the map!");
+            return;
+        }
+
+        _isInitialized = true;
+
+        _mazeImage = _manager.MazeImage;
     }
 
-    private async void GenerateMaze()
+    private void GenerateMaze()
     {
-        // Получаем пиксели изображения
-        Color[] pixels = _mazeImage.GetPixels();
-        Color[,] map = new Color[_mazeImage.width, _mazeImage.height];
-
-        // Проходим по пикселям и создаем объекты
-        for (int y = 0; y < _mazeImage.height; y++)
+        if (_mazeImage == null)
         {
-            for (int x = 0; x < _mazeImage.width; x++)
+            Debug.LogError("Maze Image was not assigned!");
+            return;
+        }
+
+        wallsRoot = new GameObject("Walls Root");
+
+        int texWidth = _mazeImage.width;
+        int texHeight = _mazeImage.height;
+
+        bool[,] isWall = new bool[texWidth, texHeight];
+        for (int y = 0; y < texHeight; y++)
+        {
+            for (int x = 0; x < texWidth; x++)
             {
-                map[x, y] = pixels[y * _mazeImage.width + x];
+                Color pixelColor = _mazeImage.GetPixel(x, y);
+                isWall[x, y] = (pixelColor.grayscale <= 0.7f);
             }
         }
 
-        _wallMaterial.mainTextureScale = new Vector2(1, wallHeight);
+        float cellSize = 1f;
 
-        for (int mapY = 0; mapY < map.GetLength(1); mapY++)
+        // Временные списки для вершин, треугольников и UV текущего сегмента.
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> triangles = new List<int>();
+        List<Vector2> uvs = new List<Vector2>();
+
+        // Счётчик клеток (блоков), добавленных в текущий сегмент.
+        int blockCounter = 0;
+        int segmentIndex = 0;
+
+        // Перебираем все клетки лабиринта.
+        for (int y = 0; y < texHeight; y++)
         {
-            for (int mapX = 0; mapX < map.GetLength(0); mapX++)
+            for (int x = 0; x < texWidth; x++)
             {
-                if (map[mapX, mapY] == Color.green)
-                {
-                    CreatePlayerStart(mapX, mapY);
-                    continue;
-                }
-                else if (map[mapX, mapY] != Color.black)
-                    continue;
+                if (!isWall[x, y])
+                    continue; // пропускаем, если клетка не стена
 
-                bool generateN = false;
-                bool generateW = false;
-                bool generateE = false;
-                bool generateS = false;
+                // Вычисляем позицию клетки в мировых координатах.
+                // Размещаем лабиринт на плоскости XZ, ось Y – вертикаль.
+                float worldX = x * cellSize;
+                float worldZ = y * cellSize;
 
-                if (mapX + 1 < map.GetLength(0))
+                // Добавляем верхнюю грань («крышу») стены.
+                // Для крыши нормаль должна смотреть вверх, поэтому порядок не инвертируем.
+                Vector3 bl = new Vector3(worldX, wallHeight, worldZ);
+                Vector3 br = new Vector3(worldX + cellSize, wallHeight, worldZ);
+                Vector3 tr = new Vector3(worldX + cellSize, wallHeight, worldZ + cellSize);
+                Vector3 tl = new Vector3(worldX, wallHeight, worldZ + cellSize);
+                AddQuad(vertices, triangles, uvs, bl, br, tr, tl, false);
+
+                // Проверяем соседей по 4 направлениям и добавляем вертикальные грани там, где отсутствует стена.
+                // Для вертикальных граней инвертируем порядок, чтобы нормали смотрели наружу.
+                // Север (сосед: (x, y+1))
+                if (y + 1 >= texHeight || !isWall[x, y + 1])
                 {
-                    if (map[mapX + 1, mapY] != Color.black)
-                        generateE = true;
+                    Vector3 v0 = new Vector3(worldX, 0, worldZ + cellSize);
+                    Vector3 v1 = new Vector3(worldX + cellSize, 0, worldZ + cellSize);
+                    Vector3 v2 = new Vector3(worldX + cellSize, wallHeight, worldZ + cellSize);
+                    Vector3 v3 = new Vector3(worldX, wallHeight, worldZ + cellSize);
+                    AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
                 }
-                if (mapX - 1 >= 0)
+                // Юг (сосед: (x, y-1))
+                if (y - 1 < 0 || !isWall[x, y - 1])
                 {
-                    if (map[mapX - 1, mapY] != Color.black)
-                        generateW = true;
+                    Vector3 v0 = new Vector3(worldX + cellSize, 0, worldZ);
+                    Vector3 v1 = new Vector3(worldX, 0, worldZ);
+                    Vector3 v2 = new Vector3(worldX, wallHeight, worldZ);
+                    Vector3 v3 = new Vector3(worldX + cellSize, wallHeight, worldZ);
+                    AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
                 }
-                if (mapY + 1 < map.GetLength(1))
+                // Восток (сосед: (x+1, y))
+                if (x + 1 >= texWidth || !isWall[x + 1, y])
                 {
-                    if (map[mapX, mapY + 1] != Color.black)
-                        generateN = true;
+                    Vector3 v0 = new Vector3(worldX + cellSize, 0, worldZ + cellSize);
+                    Vector3 v1 = new Vector3(worldX + cellSize, 0, worldZ);
+                    Vector3 v2 = new Vector3(worldX + cellSize, wallHeight, worldZ);
+                    Vector3 v3 = new Vector3(worldX + cellSize, wallHeight, worldZ + cellSize);
+                    AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
                 }
-                if (mapY - 1 >= 0)
+                // Запад (сосед: (x-1, y))
+                if (x - 1 < 0 || !isWall[x - 1, y])
                 {
-                    if (map[mapX, mapY - 1] != Color.black)
-                        generateS = true;
+                    Vector3 v0 = new Vector3(worldX, 0, worldZ);
+                    Vector3 v1 = new Vector3(worldX, 0, worldZ + cellSize);
+                    Vector3 v2 = new Vector3(worldX, wallHeight, worldZ + cellSize);
+                    Vector3 v3 = new Vector3(worldX, wallHeight, worldZ);
+                    AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
                 }
 
-                if (generateN || generateE || generateW || generateS)
-                    await CreateWall(mapX, mapY, generateN, generateE, generateW, generateS);
+                blockCounter++;
+
+                // Если достигли лимита клеток для сегмента, создаём меш для текущего сегмента
+                if (blockCounter >= _countOfMeshesInCombinedMesh)
+                {
+                    CreateMazeMeshSegment(vertices, triangles, uvs, segmentIndex);
+                    segmentIndex++;
+                    blockCounter = 0;
+                    vertices.Clear();
+                    triangles.Clear();
+                    uvs.Clear();
+                }
             }
         }
 
-        CreateFloor();
-        CreateCeiling();
-        PlaceLamps();
+        // Если остались данные для неполного сегмента, создаём для них меш
+        if (vertices.Count > 0)
+        {
+            CreateMazeMeshSegment(vertices, triangles, uvs, segmentIndex);
+        }
+    }
 
-        await CombineWalls();
+    private void CreateMazeMeshSegment(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs, int segmentIndex)
+    {
+        Mesh segmentMesh = new Mesh();
+        segmentMesh.vertices = vertices.ToArray();
+        segmentMesh.triangles = triangles.ToArray();
+        segmentMesh.uv = uvs.ToArray();
+        segmentMesh.RecalculateNormals();
 
-        _spawner.Initialize();
-        _spawner.SpawnPlayer();
-        _surface.BuildNavMesh();
-        _onMazeCreated?.Invoke();
+        GameObject segmentGO = new GameObject($"Maze Mesh Segment {segmentIndex}");
+        segmentGO.transform.parent = wallsRoot.transform;
+        MeshFilter mf = segmentGO.AddComponent<MeshFilter>();
+        mf.mesh = segmentMesh;
+        MeshRenderer mr = segmentGO.AddComponent<MeshRenderer>();
+        mr.material = _wallMaterial;
+        // Добавляем коллайдер для стен
+        MeshCollider mc = segmentGO.AddComponent<MeshCollider>();
+        mc.sharedMesh = segmentMesh;
+        segmentGO.isStatic = true;
+    }
+
+    private void AddQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
+                 Vector3 bl, Vector3 br, Vector3 tr, Vector3 tl, bool invert)
+    {
+        int startIndex = vertices.Count;
+        vertices.Add(bl);
+        vertices.Add(br);
+        vertices.Add(tr);
+        vertices.Add(tl);
+
+        if (!invert)
+        {
+            // Обычный порядок: нормаль направлена по умолчанию
+            triangles.Add(startIndex + 0);
+            triangles.Add(startIndex + 2);
+            triangles.Add(startIndex + 1);
+
+            triangles.Add(startIndex + 0);
+            triangles.Add(startIndex + 3);
+            triangles.Add(startIndex + 2);
+        }
+        else
+        {
+            // Инвертированный порядок: нормаль направлена в противоположную сторону
+            triangles.Add(startIndex + 0);
+            triangles.Add(startIndex + 1);
+            triangles.Add(startIndex + 2);
+
+            triangles.Add(startIndex + 0);
+            triangles.Add(startIndex + 2);
+            triangles.Add(startIndex + 3);
+        }
+
+        // Простейшее UV-развертывание
+        uvs.Add(new Vector2(0, 0));
+        uvs.Add(new Vector2(1, 0));
+        uvs.Add(new Vector2(1, 1));
+        uvs.Add(new Vector2(0, 1));
     }
 
     private void CreateFloor()
     {
         GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
         floor.name = "Floor";
-        floor.transform.position = new Vector3(_mazeImage.width / 2, 0, _mazeImage.height / 2);
-        floor.transform.localScale = new Vector3(0.1f * _mazeImage.width, 1, 0.1f * _mazeImage.height);
-        _floorMaterial.mainTextureScale = new Vector2(_mazeImage.width + 1f, _mazeImage.height + 1f);
+        // Центрируем пол относительно лабиринта; если 1 клетка = 1 метр, то размеры равны _mazeImage.width и _mazeImage.height.
+        floor.transform.position = new Vector3(_mazeImage.width * 0.5f, 0, _mazeImage.height * 0.5f);
+        // Стандартный plane имеет размер 10, поэтому масштаб = размер лабиринта / 10.
+        floor.transform.localScale = new Vector3(_mazeImage.width / 10f, 1, _mazeImage.height / 10f);
+        _floorMaterial.mainTextureScale = new Vector2(_mazeImage.width, _mazeImage.height);
         floor.GetComponent<MeshRenderer>().material = _floorMaterial;
     }
 
@@ -118,154 +238,12 @@ public class MazeLoaderOptimized : MonoBehaviour
     {
         GameObject ceiling = GameObject.CreatePrimitive(PrimitiveType.Plane);
         ceiling.name = "Ceiling";
-        ceiling.transform.position = new Vector3(_mazeImage.width / 2, wallHeight, _mazeImage.height / 2);
         ceiling.transform.eulerAngles = Vector3.left * 180;
-        ceiling.transform.localScale = new Vector3(0.1f * _mazeImage.width, 1, 0.1f * _mazeImage.height);
-        _ceilingMaterial.mainTextureScale = new Vector2(_mazeImage.width + 1f, _mazeImage.height + 1f);
+        ceiling.transform.position = new Vector3(_mazeImage.width * 0.5f, wallHeight, _mazeImage.height * 0.5f);
+        ceiling.transform.localScale = new Vector3(_mazeImage.width / 10f, 1, _mazeImage.height / 10f);
+        _ceilingMaterial.mainTextureScale = new Vector2(_mazeImage.width, _mazeImage.height);
         ceiling.GetComponent<MeshRenderer>().material = _ceilingMaterial;
-    }
 
-    private async Task CreateWall(int x, int y, bool generateN, bool generateE, bool generateW, bool generateS)
-    {
-        Vector3 position = new Vector3(x, wallHeight / 2, y);
-        GameObject wallRoot = new GameObject($"Wall {x} {y}");
-        wallRoot.transform.position = position;
-
-        if (generateN)
-        {
-            GameObject wallN = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            wallN.transform.localScale = new Vector3(0.1f, 0.1f, wallHeight * 0.1f);
-            wallN.transform.eulerAngles = new Vector3(90, 90, 90);
-            wallN.transform.parent = wallRoot.transform;
-            wallN.transform.localPosition = new Vector3(0, 0, 0.5f);
-            wallN.GetComponent<MeshRenderer>().material = _wallMaterial;
-            wallN.name = "N";
-        }
-
-        if (generateE)
-        {
-            GameObject wallE = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            wallE.transform.localScale = new Vector3(0.1f, 0.1f, wallHeight * 0.1f);
-            wallE.transform.eulerAngles = new Vector3(90, 180, 90);
-            wallE.transform.parent = wallRoot.transform;
-            wallE.transform.localPosition = new Vector3(0.5f, 0, 0);
-            wallE.GetComponent<MeshRenderer>().material = _wallMaterial;
-            wallE.name = "E";
-        }
-
-        if (generateW)
-        {
-            GameObject wallW = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            wallW.transform.localScale = new Vector3(0.1f, 0.1f, wallHeight * 0.1f);
-            wallW.transform.eulerAngles = new Vector3(90, 0, 90);
-            wallW.transform.parent = wallRoot.transform;
-            wallW.transform.localPosition = new Vector3(-0.5f, 0, 0);
-            wallW.GetComponent<MeshRenderer>().material = _wallMaterial;
-            wallW.name = "W";
-        }
-
-        if (generateS)
-        {
-            GameObject wallS = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            wallS.transform.localScale = new Vector3(0.1f, 0.1f, wallHeight * 0.1f);
-            wallS.transform.eulerAngles = new Vector3(90, -90, 90);
-            wallS.transform.parent = wallRoot.transform;
-            wallS.transform.localPosition = new Vector3(0, 0, -0.5f);
-            wallS.GetComponent<MeshRenderer>().material = _wallMaterial;
-            wallS.name = "S";
-        }
-
-        wallRoot.transform.parent = wallsRoot.transform;
-    }
-
-    private void CreatePlayerStart(int x, int y)
-    {
-        Vector3 position = new Vector3(x, 0.5f, y);
-        GameObject spawnPoint = new GameObject();
-        spawnPoint.transform.position = position;
-        spawnPoint.name = $"SpawnPoint {x} {y}";
-        spawnPoint.tag = "SpawnPoint";
-        spawnPoint.transform.parent = spawnPointsRoot.transform;
-    }
-
-    private void LoadImage(string filePath)
-    {
-        byte[] fileData = File.ReadAllBytes(filePath);
-        Texture2D texture = new Texture2D(1, 1);
-        if (texture.LoadImage(fileData))  // Загружаем изображение в текстуру
-        {
-            _mazeImage = texture;
-        }
-        else
-        {
-            Debug.LogError("Не удалось загрузить изображение.");
-            return;
-        }
-    }
-
-    private async Task CombineWalls()
-    {
-        // Получаем все MeshFilter в дочерних объектах wallsRoot
-        MeshFilter[] meshFilters = wallsRoot.GetComponentsInChildren<MeshFilter>();
-
-        // Если мешей нет, выходим из метода
-        if (meshFilters.Length == 0)
-        {
-            Debug.LogWarning("Нет стен для объединения.");
-            return;
-        }
-
-        // Вычисляем количество групп для объединения
-        int groupCount = Mathf.CeilToInt((float)meshFilters.Length / _countOfMeshesInCombinedMesh);
-
-        // Проходим по каждой группе
-        for (int groupIndex = 0; groupIndex < groupCount; groupIndex++)
-        {
-            // Вычисляем количество мешей в текущей группе
-            int meshesInGroup = Mathf.Min(_countOfMeshesInCombinedMesh, meshFilters.Length - groupIndex * _countOfMeshesInCombinedMesh);
-
-            // Создаем массив CombineInstance для текущей группы
-            CombineInstance[] combineInstances = new CombineInstance[meshesInGroup];
-
-            // Заполняем массив CombineInstance
-            for (int i = 0; i < meshesInGroup; i++)
-            {
-                int meshIndex = groupIndex * _countOfMeshesInCombinedMesh + i;
-                combineInstances[i].mesh = meshFilters[meshIndex].sharedMesh;
-                combineInstances[i].transform = meshFilters[meshIndex].transform.localToWorldMatrix;
-
-                // Деактивируем объект стены
-                meshFilters[meshIndex].gameObject.SetActive(false);
-            }
-
-            // Создаем новый меш для группы
-            Mesh combinedMesh = new Mesh();
-            combinedMesh.CombineMeshes(combineInstances);
-
-            // Создаем новый объект для объединенного меша
-            GameObject combinedObject = new GameObject($"Combined Walls {groupIndex}");
-            combinedObject.transform.parent = wallsRoot.transform;
-
-            // Добавляем компоненты MeshFilter и MeshRenderer
-            MeshFilter meshFilter = combinedObject.AddComponent<MeshFilter>();
-            meshFilter.sharedMesh = combinedMesh;
-
-            MeshRenderer meshRenderer = combinedObject.AddComponent<MeshRenderer>();
-            meshRenderer.material = _wallMaterial;
-
-            // Добавляем MeshCollider (опционально)
-            combinedObject.AddComponent<MeshCollider>().sharedMesh = combinedMesh;
-            combinedObject.isStatic = true;
-        }
-
-        // Удаляем все деактивированные объекты стен
-        foreach (var meshFilter in meshFilters)
-        {
-            if (!meshFilter.gameObject.activeSelf)
-            {
-                Destroy(meshFilter.gameObject.transform.parent.gameObject);
-            }
-        }
     }
 
     private void PlaceLamps()
@@ -274,7 +252,7 @@ public class MazeLoaderOptimized : MonoBehaviour
         Color[] pixels = _mazeImage.GetPixels();
         Color[,] map = new Color[_mazeImage.width, _mazeImage.height];
 
-        // Проходим по пикселям и создаем объекты
+        // Заполняем двумерный массив цветов
         for (int y = 0; y < _mazeImage.height; y++)
         {
             for (int x = 0; x < _mazeImage.width; x++)
@@ -297,11 +275,22 @@ public class MazeLoaderOptimized : MonoBehaviour
                     continue;
 
                 GameObject lamp = Instantiate(_lampPrefab, new Vector3(x, wallHeight, y), Quaternion.identity);
-
                 lamp.isStatic = true;
             }
         }
+    }
 
+    public void GenerateMap()
+    {
+        if (!_isInitialized)
+            Initialize();
 
+        if (!_isInitialized)
+            return;
+
+        GenerateMaze();
+        CreateFloor();
+        CreateCeiling();
+        PlaceLamps();
     }
 }

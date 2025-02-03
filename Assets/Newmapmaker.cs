@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEngine.AI;
 using UnityEngine;
 
 public class Newmapmaker : MonoBehaviour
