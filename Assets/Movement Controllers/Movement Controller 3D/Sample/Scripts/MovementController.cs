@@ -280,6 +280,9 @@ public class MovementController : MovementControllerBase
 
         _currentVelocity.y = _verticalVelocity;
 
+        if (_currentVelocity.x != 0 || _currentVelocity.z != 0)
+            OnMoveEvent?.Invoke(_moveVector, Velocity, IsRun, IsDuck, IsProne);
+
         _controller.Move(_currentVelocity * Time.deltaTime);
     }
 
