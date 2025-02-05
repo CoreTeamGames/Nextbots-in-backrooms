@@ -1,0 +1,27 @@
+﻿lineKey,text
+Play, Играть
+Settings, Настройки
+Developers, Разработчики
+Exit, Выход
+Configure, Конфигурация
+GenerateMaze, Сгенерировать локацию
+Back, Назад
+MazeSize, Размер локации
+VideoSettings, Видео
+AudioSettings, Аудио
+LanguageSettings, Язык
+Language, Язык
+Resolution, Разрешение экрана
+FullScreen, Полноэкранный режим
+PostProcess, Пост-Обработка
+Fog, Туман
+DrawDistance, Дальность прорисовки
+Shadows, Тени
+SFXVolume, Громкость звуков
+UIVolume, Громкость интерфейса
+MusicVolume, Громкость музыки
+Start, Начать
+ToMenu, В меню
+ToMenuExit, В меню
+YoureDead, Ты умер!
+Paused, Игра на паузе!

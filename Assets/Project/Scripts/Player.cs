@@ -11,6 +11,7 @@ public class Player : MonoBehaviour
     CameraController _cameraController;
     CharacterController _controller;
     [SerializeField] float _onDeathVelocityMultipiler = 1.5f;
+    private bool _isDead = false;
     public delegate void OnDeath(); 
     public OnDeath OnDeathEvent; 
 
@@ -25,6 +26,11 @@ public class Player : MonoBehaviour
 
     public void Death()
     {
+        if (_isDead)
+            return;
+
+        PauseMenu.canPause = false;
+        _isDead = true;
         Vector3 velocity = _controller.velocity;
         Destroy(_movementController);
         Destroy(_cameraController);

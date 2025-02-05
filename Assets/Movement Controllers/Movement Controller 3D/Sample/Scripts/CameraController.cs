@@ -23,7 +23,7 @@ public class CameraController : CameraControllerBase
 
     public override void Look(Vector2 lookVector)
     {
-        if (cameraTransform == null || playerBody == null)
+        if (cameraTransform == null || playerBody == null || PauseMenu.IsPaused)
             return;
 
         float mouseX = lookVector.x * Sensivity * (InvertX ? -1 : 1);

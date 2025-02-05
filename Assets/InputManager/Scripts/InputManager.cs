@@ -24,21 +24,21 @@ namespace CoreTeamGamesSDK.Input.Management
         #region Code
         private void Awake()
         {
-            //if (Instance == null)
-            //{
-            //    Instance = this;
-            //    DontDestroyOnLoad(gameObject);
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
                 InitializeInput();
-            //}
-            //else
-            //{
-            //    Destroy(gameObject);
-            //}
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
 
         private void InitializeInput()
         {
-            _playerInput = GetComponent<PlayerInput>();
+            _playerInput = FindObjectOfType<PlayerInput>();
             _inputActions = _playerInput.actions;
             _inputEvents = new Dictionary<string, Action<InputAction.CallbackContext>>();
 
@@ -77,6 +77,7 @@ namespace CoreTeamGamesSDK.Input.Management
 
         private void InvokeEvent(string actionName, InputAction.CallbackContext context)
         {
+            if (_inputEvents.ContainsKey(actionName))
             _inputEvents[actionName]?.Invoke(context);
         }
 

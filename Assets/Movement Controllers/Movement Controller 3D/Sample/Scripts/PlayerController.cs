@@ -6,7 +6,6 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     #region Variables
-    [SerializeField] private InputManager _manager;
     [SerializeField] private MovementControllerBase _movementController;
     [SerializeField] private CameraControllerBase _cameraController;
     #endregion
@@ -27,23 +26,22 @@ public class PlayerController : MonoBehaviour
 
     private void OnEnable()
     {
-
-        _manager.SubscribeToInput("Move", OnMove);
-        _manager.SubscribeToInput("Jump", OnJump);
-        _manager.SubscribeToInput("Duck", OnDuck);
-        _manager.SubscribeToInput("Prone", OnProne);
-        _manager.SubscribeToInput("Run", OnRun);
-        _manager.SubscribeToInput("Look", OnLook);
+        InputManager.Instance.SubscribeToInput("Move", OnMove);
+        InputManager.Instance.SubscribeToInput("Jump", OnJump);
+        InputManager.Instance.SubscribeToInput("Duck", OnDuck);
+        InputManager.Instance.SubscribeToInput("Prone", OnProne);
+        InputManager.Instance.SubscribeToInput("Run", OnRun);
+        InputManager.Instance.SubscribeToInput("Look", OnLook);
     }
 
     private void OnDisable()
     {
-        _manager.UnsubscribeFromInput("Move", OnMove);
-        _manager.UnsubscribeFromInput("Jump", OnJump);
-        _manager.UnsubscribeFromInput("Duck", OnDuck);
-        _manager.UnsubscribeFromInput("Prone", OnProne);
-        _manager.UnsubscribeFromInput("Run", OnRun);
-        _manager.UnsubscribeFromInput("Look", OnLook);
+        InputManager.Instance.UnsubscribeFromInput("Move", OnMove);
+        InputManager.Instance.UnsubscribeFromInput("Jump", OnJump);
+        InputManager.Instance.UnsubscribeFromInput("Duck", OnDuck);
+        InputManager.Instance.UnsubscribeFromInput("Prone", OnProne);
+        InputManager.Instance.UnsubscribeFromInput("Run", OnRun);
+        InputManager.Instance.UnsubscribeFromInput("Look", OnLook);
     }
 
     private void OnMove(InputAction.CallbackContext context)

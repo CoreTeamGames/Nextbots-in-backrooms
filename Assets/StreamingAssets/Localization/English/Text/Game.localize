@@ -1,0 +1,27 @@
+﻿lineKey,text
+Play, Play
+Settings, Settings
+Developers, Developers
+Exit, Exit
+Configure, Configure
+GenerateMaze, Generate location
+Back, Back
+MazeSize, Location size
+VideoSettings, Video
+AudioSettings, Audio
+LanguageSettings, Language
+Language, Language
+Resolution, Screen Resolution
+FullScreen, FullscreenMode
+PostProcess, Post-Processing
+Fog, Fog
+DrawDistance, Drawing distance
+Shadows, Shadows
+SFXVolume, SFX volume
+UIVolume, UI volume
+MusicVolume, Music volume
+Start, Start!
+ToMenu, To menu
+ToMenuExit, Exit to menu
+YoureDead, You're dead!
+Paused, Game paused!

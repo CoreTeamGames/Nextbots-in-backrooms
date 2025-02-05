@@ -137,7 +137,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2322598283259418013}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.15, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1898430548923371726}
@@ -152,16 +152,16 @@ Light:
   m_GameObject: {fileID: 2322598283259418013}
   m_Enabled: 1
   serializedVersion: 10
-  m_Type: 0
+  m_Type: 2
   m_Shape: 0
   m_Color: {r: 1, g: 0.8168078, b: 0.2783019, a: 1}
-  m_Intensity: 1
+  m_Intensity: 15
   m_Range: 20
-  m_SpotAngle: 165
-  m_InnerSpotAngle: 9
+  m_SpotAngle: 170
+  m_InnerSpotAngle: 150
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 1
+    m_Type: 0
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -248,7 +248,7 @@ AudioSource:
     type: 2}
   m_audioClip: {fileID: 8300000, guid: a47e618a82179233eb28f2e5028e3e67, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.1
+  m_Volume: 0.2
   m_Pitch: 1
   Loop: 1
   Mute: 0

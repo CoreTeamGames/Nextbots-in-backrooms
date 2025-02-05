@@ -55,11 +55,13 @@ public class MazeLoaderOptimized : MonoBehaviour
             return;
         }
 
+        // Создаём корневой объект для стен
         wallsRoot = new GameObject("Walls Root");
 
         int texWidth = _mazeImage.width;
         int texHeight = _mazeImage.height;
 
+        // Считываем данные о стенах: true – клетка является стеной
         bool[,] isWall = new bool[texWidth, texHeight];
         for (int y = 0; y < texHeight; y++)
         {
@@ -71,99 +73,91 @@ public class MazeLoaderOptimized : MonoBehaviour
         }
 
         float cellSize = 1f;
+        // Определяем размер чанка (количество клеток по одной стороне)
+        int chunkSide = Mathf.RoundToInt(Mathf.Sqrt(_countOfMeshesInCombinedMesh));
+        // Если значение меньше 1, задаём 1
+        chunkSide = Mathf.Max(1, chunkSide);
 
-        // Временные списки для вершин, треугольников и UV текущего сегмента.
-        List<Vector3> vertices = new List<Vector3>();
-        List<int> triangles = new List<int>();
-        List<Vector2> uvs = new List<Vector2>();
-
-        // Счётчик клеток (блоков), добавленных в текущий сегмент.
-        int blockCounter = 0;
-        int segmentIndex = 0;
-
-        // Перебираем все клетки лабиринта.
-        for (int y = 0; y < texHeight; y++)
+        // Разбиваем лабиринт на квадратные чанки
+        for (int chunkY = 0; chunkY < texHeight; chunkY += chunkSide)
         {
-            for (int x = 0; x < texWidth; x++)
+            for (int chunkX = 0; chunkX < texWidth; chunkX += chunkSide)
             {
-                if (!isWall[x, y])
-                    continue; // пропускаем, если клетка не стена
+                List<Vector3> vertices = new List<Vector3>();
+                List<int> triangles = new List<int>();
+                List<Vector2> uvs = new List<Vector2>();
 
-                // Вычисляем позицию клетки в мировых координатах.
-                // Размещаем лабиринт на плоскости XZ, ось Y – вертикаль.
-                float worldX = x * cellSize;
-                float worldZ = y * cellSize;
-
-                // Добавляем верхнюю грань («крышу») стены.
-                // Для крыши нормаль должна смотреть вверх, поэтому порядок не инвертируем.
-                Vector3 bl = new Vector3(worldX, wallHeight, worldZ);
-                Vector3 br = new Vector3(worldX + cellSize, wallHeight, worldZ);
-                Vector3 tr = new Vector3(worldX + cellSize, wallHeight, worldZ + cellSize);
-                Vector3 tl = new Vector3(worldX, wallHeight, worldZ + cellSize);
-                AddQuad(vertices, triangles, uvs, bl, br, tr, tl, false);
-
-                // Проверяем соседей по 4 направлениям и добавляем вертикальные грани там, где отсутствует стена.
-                // Для вертикальных граней инвертируем порядок, чтобы нормали смотрели наружу.
-                // Север (сосед: (x, y+1))
-                if (y + 1 >= texHeight || !isWall[x, y + 1])
+                // Проходим по клеткам в пределах текущего чанка
+                for (int y = chunkY; y < Mathf.Min(chunkY + chunkSide, texHeight); y++)
                 {
-                    Vector3 v0 = new Vector3(worldX, 0, worldZ + cellSize);
-                    Vector3 v1 = new Vector3(worldX + cellSize, 0, worldZ + cellSize);
-                    Vector3 v2 = new Vector3(worldX + cellSize, wallHeight, worldZ + cellSize);
-                    Vector3 v3 = new Vector3(worldX, wallHeight, worldZ + cellSize);
-                    AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
+                    for (int x = chunkX; x < Mathf.Min(chunkX + chunkSide, texWidth); x++)
+                    {
+                        if (!isWall[x, y])
+                            continue; // пропускаем, если клетка не стена
+
+                        // Вычисляем позицию клетки в мировых координатах с учётом смещения
+                        float worldX = x * cellSize;
+                        float worldZ = y * cellSize;
+                        Vector3 cellOrigin = new Vector3(worldX, 0, worldZ);
+
+                        // Верхняя грань (крыша) стены – нормаль смотрит вверх (не инвертируем порядок)
+                        Vector3 bl = cellOrigin + new Vector3(0, wallHeight, 0);
+                        Vector3 br = cellOrigin + new Vector3(cellSize, wallHeight, 0);
+                        Vector3 tr = cellOrigin + new Vector3(cellSize, wallHeight, cellSize);
+                        Vector3 tl = cellOrigin + new Vector3(0, wallHeight, cellSize);
+                        AddQuad(vertices, triangles, uvs, bl, br, tr, tl, false);
+
+                        // Вертикальные грани – если соседней клетки со стеной нет, добавляем грань с инвертированным порядком
+
+                        // Север (y+1)
+                        if (y + 1 >= texHeight || !isWall[x, y + 1])
+                        {
+                            Vector3 v0 = cellOrigin + new Vector3(0, 0, cellSize);
+                            Vector3 v1 = cellOrigin + new Vector3(cellSize, 0, cellSize);
+                            Vector3 v2 = cellOrigin + new Vector3(cellSize, wallHeight, cellSize);
+                            Vector3 v3 = cellOrigin + new Vector3(0, wallHeight, cellSize);
+                            AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
+                        }
+                        // Юг (y-1)
+                        if (y - 1 < 0 || !isWall[x, y - 1])
+                        {
+                            Vector3 v0 = cellOrigin + new Vector3(cellSize, 0, 0);
+                            Vector3 v1 = cellOrigin + new Vector3(0, 0, 0);
+                            Vector3 v2 = cellOrigin + new Vector3(0, wallHeight, 0);
+                            Vector3 v3 = cellOrigin + new Vector3(cellSize, wallHeight, 0);
+                            AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
+                        }
+                        // Восток (x+1)
+                        if (x + 1 >= texWidth || !isWall[x + 1, y])
+                        {
+                            Vector3 v0 = cellOrigin + new Vector3(cellSize, 0, cellSize);
+                            Vector3 v1 = cellOrigin + new Vector3(cellSize, 0, 0);
+                            Vector3 v2 = cellOrigin + new Vector3(cellSize, wallHeight, 0);
+                            Vector3 v3 = cellOrigin + new Vector3(cellSize, wallHeight, cellSize);
+                            AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
+                        }
+                        // Запад (x-1)
+                        if (x - 1 < 0 || !isWall[x - 1, y])
+                        {
+                            Vector3 v0 = cellOrigin + new Vector3(0, 0, 0);
+                            Vector3 v1 = cellOrigin + new Vector3(0, 0, cellSize);
+                            Vector3 v2 = cellOrigin + new Vector3(0, wallHeight, cellSize);
+                            Vector3 v3 = cellOrigin + new Vector3(0, wallHeight, 0);
+                            AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
+                        }
+                    }
                 }
-                // Юг (сосед: (x, y-1))
-                if (y - 1 < 0 || !isWall[x, y - 1])
-                {
-                    Vector3 v0 = new Vector3(worldX + cellSize, 0, worldZ);
-                    Vector3 v1 = new Vector3(worldX, 0, worldZ);
-                    Vector3 v2 = new Vector3(worldX, wallHeight, worldZ);
-                    Vector3 v3 = new Vector3(worldX + cellSize, wallHeight, worldZ);
-                    AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
-                }
-                // Восток (сосед: (x+1, y))
-                if (x + 1 >= texWidth || !isWall[x + 1, y])
-                {
-                    Vector3 v0 = new Vector3(worldX + cellSize, 0, worldZ + cellSize);
-                    Vector3 v1 = new Vector3(worldX + cellSize, 0, worldZ);
-                    Vector3 v2 = new Vector3(worldX + cellSize, wallHeight, worldZ);
-                    Vector3 v3 = new Vector3(worldX + cellSize, wallHeight, worldZ + cellSize);
-                    AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
-                }
-                // Запад (сосед: (x-1, y))
-                if (x - 1 < 0 || !isWall[x - 1, y])
-                {
-                    Vector3 v0 = new Vector3(worldX, 0, worldZ);
-                    Vector3 v1 = new Vector3(worldX, 0, worldZ + cellSize);
-                    Vector3 v2 = new Vector3(worldX, wallHeight, worldZ + cellSize);
-                    Vector3 v3 = new Vector3(worldX, wallHeight, worldZ);
-                    AddQuad(vertices, triangles, uvs, v0, v1, v2, v3, true);
-                }
 
-                blockCounter++;
-
-                // Если достигли лимита клеток для сегмента, создаём меш для текущего сегмента
-                if (blockCounter >= _countOfMeshesInCombinedMesh)
+                // Если в этом чанке есть данные, создаём комбинированный меш
+                if (vertices.Count > 0)
                 {
-                    CreateMazeMeshSegment(vertices, triangles, uvs, segmentIndex);
-                    segmentIndex++;
-                    blockCounter = 0;
-                    vertices.Clear();
-                    triangles.Clear();
-                    uvs.Clear();
+                    CreateMazeMeshSegment(vertices, triangles, uvs, $"Chunk_{chunkX}_{chunkY}");
                 }
             }
         }
-
-        // Если остались данные для неполного сегмента, создаём для них меш
-        if (vertices.Count > 0)
-        {
-            CreateMazeMeshSegment(vertices, triangles, uvs, segmentIndex);
-        }
     }
 
-    private void CreateMazeMeshSegment(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs, int segmentIndex)
+    private void CreateMazeMeshSegment(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs, string segmentName)
     {
         Mesh segmentMesh = new Mesh();
         segmentMesh.vertices = vertices.ToArray();
@@ -171,7 +165,13 @@ public class MazeLoaderOptimized : MonoBehaviour
         segmentMesh.uv = uvs.ToArray();
         segmentMesh.RecalculateNormals();
 
-        GameObject segmentGO = new GameObject($"Maze Mesh Segment {segmentIndex}");
+        // Приводим bounding box к квадрату для удобства выбора:
+        Bounds b = segmentMesh.bounds;
+        float maxSize = Mathf.Max(b.size.x, b.size.z);
+        Vector3 center = b.center;
+        segmentMesh.bounds = new Bounds(center, new Vector3(maxSize, b.size.y, maxSize));
+
+        GameObject segmentGO = new GameObject($"Maze Mesh Segment {segmentName}");
         segmentGO.transform.parent = wallsRoot.transform;
         MeshFilter mf = segmentGO.AddComponent<MeshFilter>();
         mf.mesh = segmentMesh;
@@ -184,7 +184,7 @@ public class MazeLoaderOptimized : MonoBehaviour
     }
 
     private void AddQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
-                 Vector3 bl, Vector3 br, Vector3 tr, Vector3 tl, bool invert)
+                           Vector3 bl, Vector3 br, Vector3 tr, Vector3 tl, bool invert)
     {
         int startIndex = vertices.Count;
         vertices.Add(bl);
@@ -194,7 +194,7 @@ public class MazeLoaderOptimized : MonoBehaviour
 
         if (!invert)
         {
-            // Обычный порядок: нормаль направлена по умолчанию
+            // Обычный порядок: нормаль по умолчанию
             triangles.Add(startIndex + 0);
             triangles.Add(startIndex + 2);
             triangles.Add(startIndex + 1);
@@ -205,7 +205,7 @@ public class MazeLoaderOptimized : MonoBehaviour
         }
         else
         {
-            // Инвертированный порядок: нормаль направлена в противоположную сторону
+            // Инвертированный порядок: нормаль в противоположную сторону
             triangles.Add(startIndex + 0);
             triangles.Add(startIndex + 1);
             triangles.Add(startIndex + 2);
@@ -224,60 +224,75 @@ public class MazeLoaderOptimized : MonoBehaviour
 
     private void CreateFloor()
     {
-        GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        floor.name = "Floor";
-        // Центрируем пол относительно лабиринта; если 1 клетка = 1 метр, то размеры равны _mazeImage.width и _mazeImage.height.
-        floor.transform.position = new Vector3(_mazeImage.width * 0.5f, 0, _mazeImage.height * 0.5f);
-        // Стандартный plane имеет размер 10, поэтому масштаб = размер лабиринта / 10.
-        floor.transform.localScale = new Vector3(_mazeImage.width / 10f, 1, _mazeImage.height / 10f);
-        _floorMaterial.mainTextureScale = new Vector2(_mazeImage.width, _mazeImage.height);
-        floor.GetComponent<MeshRenderer>().material = _floorMaterial;
+        GameObject root = new GameObject("Floor Root");
+
+        int iterationsX = _mazeImage.width / 10 + 1;
+        int iterationsY = _mazeImage.height / 10 + 1;
+
+        for (int y = 0; y < iterationsY; y++)
+        {
+            for (int x = 0; x < iterationsX; x++)
+            {
+                GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                floor.transform.SetPositionAndRotation(new Vector3(x * 10, 0, y * 10), Quaternion.Euler(0, 0, 0));
+                floor.GetComponent<MeshRenderer>().material = _floorMaterial;
+                floor.transform.parent = root.transform;
+            }
+        }
+
+        root.isStatic = true;
     }
 
     private void CreateCeiling()
     {
-        GameObject ceiling = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        ceiling.name = "Ceiling";
-        ceiling.transform.eulerAngles = Vector3.left * 180;
-        ceiling.transform.position = new Vector3(_mazeImage.width * 0.5f, wallHeight, _mazeImage.height * 0.5f);
-        ceiling.transform.localScale = new Vector3(_mazeImage.width / 10f, 1, _mazeImage.height / 10f);
-        _ceilingMaterial.mainTextureScale = new Vector2(_mazeImage.width, _mazeImage.height);
-        ceiling.GetComponent<MeshRenderer>().material = _ceilingMaterial;
+        GameObject root = new GameObject("Ceiling Root");
 
+        int iterationsX = _mazeImage.width / 10 + 1;
+        int iterationsY = _mazeImage.height / 10 + 1;
+
+        for (int y = 0; y < iterationsY; y++)
+        {
+            for (int x = 0; x < iterationsX; x++)
+            {
+                GameObject ceiling = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                ceiling.transform.SetPositionAndRotation(new Vector3(x * 10, wallHeight, y * 10), Quaternion.Euler(180, 0, 0));
+                ceiling.GetComponent<MeshRenderer>().material = _ceilingMaterial;
+                ceiling.transform.parent = root.transform;
+            }
+        }
+
+        root.isStatic = true;
     }
 
     private void PlaceLamps()
     {
-        // Получаем пиксели изображения
-        Color[] pixels = _mazeImage.GetPixels();
-        Color[,] map = new Color[_mazeImage.width, _mazeImage.height];
+        GameObject root = new GameObject("Lamps Root");
 
-        // Заполняем двумерный массив цветов
-        for (int y = 0; y < _mazeImage.height; y++)
-        {
-            for (int x = 0; x < _mazeImage.width; x++)
-            {
-                map[x, y] = pixels[y * _mazeImage.width + x];
-            }
-        }
+        int width = _mazeImage.width;
+        int height = _mazeImage.height;
 
-        for (int y = 0; y < _mazeImage.height; y++)
+        for (int y = 0; y < height; y++)
         {
             if (y % _lampOffset != 0)
                 continue;
 
-            for (int x = 0; x < _mazeImage.width; x++)
+            for (int x = 0; x < width; x++)
             {
                 if (x % _lampOffset != 0)
                     continue;
 
-                if (map[x, y] == Color.black)
+                Color pixel = _mazeImage.GetPixel(x, y);
+                if (pixel.grayscale <= 0.7f)
                     continue;
 
-                GameObject lamp = Instantiate(_lampPrefab, new Vector3(x, wallHeight, y), Quaternion.identity);
-                lamp.isStatic = true;
+                // Центр клетки
+                Vector3 lampPos = new Vector3(x + 0.5f, wallHeight, y + 0.5f);
+                GameObject lamp = Instantiate(_lampPrefab, lampPos, Quaternion.identity);
+                lamp.transform.parent = root.transform;
             }
         }
+
+        root.isStatic = true;
     }
 
     public void GenerateMap()
