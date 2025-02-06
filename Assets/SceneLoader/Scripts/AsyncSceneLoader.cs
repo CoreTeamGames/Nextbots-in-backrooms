@@ -2,6 +2,7 @@
 using UnityEngine.Events;
 using System.Collections;
 using UnityEngine.UI;
+using DG.Tweening;
 using UnityEngine;
 using TMPro;
 
@@ -49,8 +50,7 @@ namespace CoreTeamGamesSDK.SceneLoader
             if (!_operation.isDone || _operation == null)
                 return;
 
-            // _canvasGroup.DOFade(0, _fadeDuration);
-            _canvasGroup.alpha = 0f;
+            _canvasGroup.DOFade(0, _fadeDuration);
             _canvasGroup.blocksRaycasts = false;
             _operation.allowSceneActivation = true;
             OnSceneLoadedEvent?.Invoke();
@@ -63,8 +63,7 @@ namespace CoreTeamGamesSDK.SceneLoader
         private IEnumerator LoadSceneCoroutine(string scene)
         {
             DontDestroyOnLoad(gameObject);
-            // _canvasGroup.DOFade(1, _fadeDuration);
-            _canvasGroup.alpha = 1f;
+             _canvasGroup.DOFade(1, _fadeDuration);
             yield return new WaitForSeconds(_fadeDuration);
 
             _canvasGroup.blocksRaycasts = true;

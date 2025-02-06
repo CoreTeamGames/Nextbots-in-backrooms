@@ -15,6 +15,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private MazeLoaderOptimized _loader;
     [SerializeField] private ObjectSpawner _objectSpawner;
     [SerializeField] private NextbotPlacer _nextbotPlacer;
+    [SerializeField] private NextbotChaseManager _chaseManager;
     [SerializeField] private PlayerSpawner _playerSpawner;
     [SerializeField] private NavmeshCreator _navmeshCreator;
 
@@ -36,6 +37,7 @@ public class LevelManager : MonoBehaviour
         _loader = FindObjectOfType<MazeLoaderOptimized>();
         _objectSpawner = FindObjectOfType<ObjectSpawner>();
         _nextbotPlacer = FindObjectOfType<NextbotPlacer>();
+        _chaseManager = FindObjectOfType<NextbotChaseManager>();
         _playerSpawner = FindObjectOfType<PlayerSpawner>();
         _navmeshCreator = FindObjectOfType<NavmeshCreator>();
 
@@ -54,6 +56,12 @@ public class LevelManager : MonoBehaviour
         if (_nextbotPlacer == null)
         {
             Debug.LogError("Can not find NextbotPlacer on Scene!");
+            return;
+        }
+
+        if (_chaseManager == null)
+        {
+            Debug.LogError("Can not find NextbotChaseManager on Scene!");
             return;
         }
 
@@ -84,6 +92,7 @@ public class LevelManager : MonoBehaviour
         if (!_isInitialized)
             return;
 
+        ChaseManager.canChase = true;
         _objectSpawner.SpawnShotgun();
         _loader.GenerateMap();
         _navmeshCreator.Bake();
@@ -97,6 +106,7 @@ public class LevelManager : MonoBehaviour
         {
             _isGameStarted = true;
             _nextbotPlacer.CreateNextbots();
+            _chaseManager.Initialize();
         }    
     }
 

@@ -510,7 +510,7 @@ MonoBehaviour:
   _canvasGroup: {fileID: 6881683992457647181}
   _progressBar: {fileID: 8581769712881219251}
   _progressText: {fileID: 8051376298554183899}
-  _fadeDuration: 1
+  _fadeDuration: 0.2
   _onSceneStartsLoadEvent:
     m_PersistentCalls:
       m_Calls: []

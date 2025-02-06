@@ -47,20 +47,20 @@ public class NextbotAI : MonoBehaviour
         // Вычисляем расстояние до цели
         float distance = Vector3.Distance(transform.position, target.position);
 
-            agent.SetDestination(target.position);
+        agent.SetDestination(target.position);
 
-            // Если Nextbot достаточно близко к цели, можно остановиться или выполнить какую-то логику
-            if (distance <= stoppingDistance)
-            {
-                // Например, можно остановить агент или запустить атаку
-                agent.isStopped = true;
+        // Если Nextbot достаточно близко к цели, можно остановиться или выполнить какую-то логику
+        if (distance <= stoppingDistance)
+        {
+            // Например, можно остановить агент или запустить атаку
+            agent.isStopped = true;
             target.GetComponent<Player>().Death();
-                // Здесь можно добавить код для атаки или другой логики
-            }
-            else
-            {
-                agent.isStopped = false;
-            }
+            // Здесь можно добавить код для атаки или другой логики
+        }
+        else
+        {
+            agent.isStopped = false;
         }
     }
+}
 

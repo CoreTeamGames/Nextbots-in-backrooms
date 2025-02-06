@@ -32,12 +32,19 @@ public class Player : MonoBehaviour
         PauseMenu.canPause = false;
         _isDead = true;
         Vector3 velocity = _controller.velocity;
+
         Destroy(_movementController);
         Destroy(_cameraController);
+
         _controller.enabled = false;
+
         _headCollider.enabled = true;
         _headRigidbody.isKinematic = false;
         _headRigidbody.velocity = velocity * _onDeathVelocityMultipiler;
+
+        ChaseManager.EndChase();
+        ChaseManager.canChase = false;
+
         OnDeathEvent?.Invoke();
     }
 }

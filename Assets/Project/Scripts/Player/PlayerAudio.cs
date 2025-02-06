@@ -1,14 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using DG.Tweening;
 using UnityEngine;
 
 public class PlayerAudio : MonoBehaviour
 {
     [SerializeField] private Transform _foots;
     [SerializeField] private AudioSource _sfxSource;
+    [SerializeField] private AudioSource _chaseSource;
     [SerializeField] private AudioClip[] _steps;
     [SerializeField] private float _stepDelay = .8f;
     [SerializeField] private float _runStepDelay = .4f;
+    [SerializeField] private float _chaseMusicFade = 2f;
 
     private bool _isInitialized = false;
     private MovementController _controller;
@@ -34,8 +35,12 @@ public class PlayerAudio : MonoBehaviour
             return;
         }
 
+        _chaseSource.volume = 0f;
+
         _controller.OnMoveEvent += OnMove;
         _player.OnDeathEvent += OnDeath;
+        ChaseManager.OnChaseStartEvent += OnChaseStart;
+        ChaseManager.OnChaseEndEvent += OnChaseEnd;
 
         _isInitialized = true;
     }
@@ -52,6 +57,8 @@ public class PlayerAudio : MonoBehaviour
 
         _controller.OnMoveEvent -= OnMove;
         _player.OnDeathEvent -= OnDeath;
+        ChaseManager.OnChaseStartEvent -= OnChaseStart;
+        ChaseManager.OnChaseEndEvent -= OnChaseEnd;
     }
 
     public void OnMove(Vector2 moveVector, float velocity, bool isRun, bool isDuck, bool isProne)
@@ -62,5 +69,23 @@ public class PlayerAudio : MonoBehaviour
         _sfxSource.PlayOneShot(_steps[Random.Range(0, _steps.Length)]);
 
         _time = Time.time + (isRun ? _runStepDelay : _stepDelay);
+    }
+
+    private void OnChaseStart()
+    {
+        //_chaseSource.DOKill(true);
+
+        _chaseSource.Play();
+        _chaseSource.DOFade(1, _chaseMusicFade);
+    }
+
+    private void OnChaseEnd()
+    {
+        //_chaseSource.DOKill(true);
+
+        _chaseSource.DOFade(0, _chaseMusicFade).OnComplete(() =>
+        {
+            _chaseSource.Stop();
+        });
     }
 }
