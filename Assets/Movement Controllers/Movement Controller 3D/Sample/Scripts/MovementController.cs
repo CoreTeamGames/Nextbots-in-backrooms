@@ -7,6 +7,15 @@ public class MovementController : MovementControllerBase
     #region Variables
     [SerializeField] private CharacterController _controller;
     [SerializeField] private float _movementSmoothTime = 0.1f;
+    [SerializeField] private float _maxStamina = 100f;
+    [SerializeField] private float _minimalStaminaToEndRest = 25f;
+    [SerializeField] private float _staminaDrainRatePerSecond = 10f; // Трата стамины в секунду при беге
+    [SerializeField] private float _staminaCostPerJump = 20f; // Трата стамины за прыжок
+    [SerializeField] private float _staminaRegenRatePerSecond = 10f; // Восстановление стамины в секунду
+    [SerializeField] private float _staminaRegenRatePerSecondNoMove = 15f; // Восстановление стамины в секунду если не двигаться
+    public float Stamina { get; private set; }
+    public float MaxStamina => _maxStamina;
+    private bool _isResting = false;
     private float _verticalVelocity;
     private Vector3 _currentVelocity;
     private Vector3 _smoothVelocity;
@@ -52,11 +61,13 @@ public class MovementController : MovementControllerBase
         {
             _defaultCameraHeight = _cameraRoot.localPosition.y;
         }
+
+        Stamina = _maxStamina;
     }
 
     public override void Jump()
     {
-        if (!EnableJump || Parameters == null || !_controller.isGrounded || _isJumping)
+        if (!EnableJump || Parameters == null || !_controller.isGrounded || _isJumping || Stamina - _staminaCostPerJump <= 0 || _isResting)
             return;
 
         if (_isProne || _isDuck)
@@ -64,9 +75,10 @@ public class MovementController : MovementControllerBase
             StandUp();
             return;
         }
+
+        Stamina -= _staminaCostPerJump;
         _verticalVelocity = Mathf.Sqrt(Parameters.JumpForce * -2f * Physics.gravity.y);
         _isJumping = true;
-
     }
 
     public override void Duck()
@@ -242,6 +254,9 @@ public class MovementController : MovementControllerBase
 
     public void FixedUpdate()
     {
+        if (_isResting)
+            _isRun = false;
+
         if (_controller.isGrounded)
         {
             _isJumping = false;
@@ -283,7 +298,39 @@ public class MovementController : MovementControllerBase
         if (_currentVelocity.x != 0 || _currentVelocity.z != 0)
             OnMoveEvent?.Invoke(_moveVector, Velocity, IsRun, IsDuck, IsProne);
 
+        // Обновление стамины
+        UpdateStamina();
+
         _controller.Move(_currentVelocity * Time.deltaTime);
+    }
+
+    private void UpdateStamina()
+    {
+        if (IsMove && _isRun && !_isResting)
+        {
+            // Тратим стамину при беге
+            Stamina -= _staminaDrainRatePerSecond * Time.deltaTime;
+        }
+        else if (!_isRun && IsGrounded)
+        {
+            // Восстанавливаем стамину, если не бежим или не двигаемся
+            Stamina += (IsMove?_staminaRegenRatePerSecond:_staminaRegenRatePerSecondNoMove) * Time.deltaTime;
+        }
+
+        // Ограничиваем стамину в пределах [0, MaxStamina]
+        Stamina = Mathf.Clamp(Stamina, 0, _maxStamina);
+
+        // Если стамина опустилась до 0, начинаем отдых
+        if (Stamina <= 0)
+        {
+            _isResting = true;
+        }
+
+        // Если стамина восстановилась до минимального значения, заканчиваем отдых
+        if (_isResting && Stamina >= _minimalStaminaToEndRest)
+        {
+            _isResting = false;
+        }
     }
 
     private bool CanStandUp()
@@ -311,6 +358,9 @@ public class MovementController : MovementControllerBase
 
     public override void Run(bool isRun)
     {
+        if (_isResting || !EnableRun)
+            return;
+
         _isRun = isRun;
     }
     #endregion
