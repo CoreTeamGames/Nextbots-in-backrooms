@@ -107,6 +107,7 @@ public class LevelManager : MonoBehaviour
             _isGameStarted = true;
             _nextbotPlacer.CreateNextbots();
             _chaseManager.Initialize();
+            FindObjectOfType<StopwatchUI>().StartStopwatch();
         }    
     }
 

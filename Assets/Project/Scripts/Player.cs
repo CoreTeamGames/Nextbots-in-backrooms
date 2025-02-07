@@ -29,6 +29,8 @@ public class Player : MonoBehaviour
         if (_isDead)
             return;
 
+        FindObjectOfType<StopwatchUI>().StopStopwatch();
+
         PauseMenu.canPause = false;
         _isDead = true;
         Vector3 velocity = _controller.velocity;

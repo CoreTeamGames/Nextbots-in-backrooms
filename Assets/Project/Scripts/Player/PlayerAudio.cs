@@ -73,18 +73,15 @@ public class PlayerAudio : MonoBehaviour
 
     private void OnChaseStart()
     {
-        //_chaseSource.DOKill(true);
-
         _chaseSource.Play();
         _chaseSource.DOFade(1, _chaseMusicFade);
     }
 
     private void OnChaseEnd()
     {
-        //_chaseSource.DOKill(true);
-
         _chaseSource.DOFade(0, _chaseMusicFade).OnComplete(() =>
         {
+            if (!ChaseManager.IsChasing)
             _chaseSource.Stop();
         });
     }

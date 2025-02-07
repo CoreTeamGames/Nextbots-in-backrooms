@@ -18,7 +18,7 @@
     #region Code
     public static void StartChase()
     {
-        if (IsChasing || !canChase)
+        if (!canChase)
             return;
 
         IsChasing = true;
@@ -28,7 +28,7 @@
 
     public static void EndChase()
     {
-        if (!IsChasing || !canChase)
+        if (!canChase)
             return;
 
         IsChasing = false;
