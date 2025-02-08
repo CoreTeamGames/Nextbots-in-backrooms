@@ -13,6 +13,9 @@ public class MovementController : MovementControllerBase
     [SerializeField] private float _staminaCostPerJump = 20f; // Трата стамины за прыжок
     [SerializeField] private float _staminaRegenRatePerSecond = 10f; // Восстановление стамины в секунду
     [SerializeField] private float _staminaRegenRatePerSecondNoMove = 15f; // Восстановление стамины в секунду если не двигаться
+
+    [SerializeField] private bool _blockInput = false;
+
     public float Stamina { get; private set; }
     public float MaxStamina => _maxStamina;
     private bool _isResting = false;
@@ -67,7 +70,7 @@ public class MovementController : MovementControllerBase
 
     public override void Jump()
     {
-        if (!EnableJump || Parameters == null || !_controller.isGrounded || _isJumping || Stamina - _staminaCostPerJump <= 0 || _isResting)
+        if (!EnableJump || Parameters == null || !_controller.isGrounded || _blockInput || _isJumping || Stamina - _staminaCostPerJump <= 0 || _isResting)
             return;
 
         if (_isProne || _isDuck)
@@ -83,7 +86,7 @@ public class MovementController : MovementControllerBase
 
     public override void Duck()
     {
-        if (!EnableDuck)
+        if (!EnableDuck || _blockInput)
             return;
 
         if (_isDuck)
@@ -114,7 +117,7 @@ public class MovementController : MovementControllerBase
 
     public override void Prone()
     {
-        if (!EnableProne)
+        if (!EnableProne || _blockInput)
             return;
 
         if (_isProne)
@@ -145,7 +148,7 @@ public class MovementController : MovementControllerBase
 
     public override void StandUp()
     {
-        if (!_isDuck && !_isProne || !CanStandUp())
+        if (!_isDuck && !_isProne || !CanStandUp() || _blockInput)
             return;
 
         _isDuck = false;
@@ -246,7 +249,7 @@ public class MovementController : MovementControllerBase
 
     public override void Move(Vector2 moveVector)
     {
-        if (!EnableMove || Parameters == null)
+        if (!EnableMove || Parameters == null || _blockInput)
             return;
 
         _moveVector = moveVector;
@@ -254,6 +257,7 @@ public class MovementController : MovementControllerBase
 
     public void FixedUpdate()
     {
+
         if (_isResting)
             _isRun = false;
 
@@ -295,13 +299,18 @@ public class MovementController : MovementControllerBase
 
         _currentVelocity.y = _verticalVelocity;
 
-        if (_currentVelocity.x != 0 || _currentVelocity.z != 0)
+        if (_currentVelocity.x != 0 || _currentVelocity.z != 0 && !_blockInput)
             OnMoveEvent?.Invoke(_moveVector, Velocity, IsRun, IsDuck, IsProne);
 
         // Обновление стамины
         UpdateStamina();
 
         _controller.Move(_currentVelocity * Time.deltaTime);
+    }
+
+    public void BlockInput(bool isBlocked)
+    {
+        _blockInput = isBlocked;
     }
 
     private void UpdateStamina()
@@ -358,7 +367,7 @@ public class MovementController : MovementControllerBase
 
     public override void Run(bool isRun)
     {
-        if (_isResting || !EnableRun)
+        if (_isResting || !EnableRun || _blockInput)
             return;
 
         _isRun = isRun;

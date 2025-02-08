@@ -7,11 +7,17 @@ public class CameraController : CameraControllerBase
     [SerializeField] private Transform playerBody;
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private bool _blockAndHideCursor;
+    [SerializeField] private bool _blockInput = false;
 
     private float xRotation = 0f;
     #endregion
 
     #region Code
+    public void BlockInput(bool isBlocked)
+    {
+        _blockInput = isBlocked;
+    }
+
     public override void Initialize()
     {
         if (_blockAndHideCursor)
@@ -23,7 +29,7 @@ public class CameraController : CameraControllerBase
 
     public override void Look(Vector2 lookVector)
     {
-        if (cameraTransform == null || playerBody == null || PauseMenu.IsPaused)
+        if (cameraTransform == null || playerBody == null || PauseMenu.IsPaused || _blockInput)
             return;
 
         float mouseX = lookVector.x * Sensivity * (InvertX ? -1 : 1);
