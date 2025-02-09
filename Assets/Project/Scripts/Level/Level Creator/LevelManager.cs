@@ -8,7 +8,6 @@ public class LevelManager : MonoBehaviour
 {
     [SerializeField] private int _minSecsToStartGame, _maxSecsToStartGame, _maxSpawnAttempts, _minDistantionFromPlayer;
     [SerializeField] private float _timeToStartGame;
-    [SerializeField] private string _filename = "backrooms.png";
     [SerializeField] private GameObject _shotgunPrefab;
     [SerializeField] private GameObject _player;
 
@@ -19,8 +18,9 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private PlayerSpawner _playerSpawner;
     [SerializeField] private NavmeshCreator _navmeshCreator;
 
-    private bool _isGameStarted = false;
     private bool _isInitialized = false;
+
+    public static bool IsGameStarted { get; private set; } = false;
     public Texture2D MazeImage { get; private set; }
 
     private void Awake()
@@ -30,9 +30,7 @@ public class LevelManager : MonoBehaviour
 
     public void Initialize()
     {
-        _timeToStartGame = Time.time + Random.Range(_minSecsToStartGame, _maxSecsToStartGame);
-
-        LoadImage(Path.Combine(Application.persistentDataPath, _filename));
+        LoadImage();
 
         _loader = FindObjectOfType<MazeLoaderOptimized>();
         _objectSpawner = FindObjectOfType<ObjectSpawner>();
@@ -92,37 +90,57 @@ public class LevelManager : MonoBehaviour
         if (!_isInitialized)
             return;
 
-        ChaseManager.canChase = true;
-        _objectSpawner.SpawnShotgun();
         _loader.GenerateMap();
-        _navmeshCreator.Bake();
         _playerSpawner.SpawnPlayers();
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (Time.time >= _timeToStartGame && !_isGameStarted)
+        switch (GameManager.CurrentGameMode)
         {
-            _isGameStarted = true;
-            _nextbotPlacer.CreateNextbots();
-            _chaseManager.Initialize();
-            FindObjectOfType<StopwatchUI>().StartStopwatch();
-        }    
-    }
-
-    private void LoadImage(string filePath)
-    {
-        byte[] fileData = File.ReadAllBytes(filePath);
-        Texture2D texture = new Texture2D(1, 1);
-        if (texture.LoadImage(fileData))
-        {
-            MazeImage = texture;
+            case EGameModes.Backrooms:
+                break;
+            case EGameModes.Nextbots:
+                SetupGameNextbots();
+                break;
+            case EGameModes.FreeMode:
+                SetupGameFreeMode();
+                break;
+            default:
+                break;
         }
-        else
+    }
+
+    private void LoadImage()
+    {
+        if (GameManager.CurrentMazeTexture == null)
         {
             Debug.LogError("Could not to load maze image");
             return;
         }
+
+        MazeImage = GameManager.CurrentMazeTexture;
+    }
+
+    private void SetupGameFreeMode()
+    {
+
+    }
+
+    private void SetupGameNextbots()
+    {
+        _navmeshCreator.Bake();
+        ChaseManager.canChase = true;
+        _objectSpawner.SpawnShotgun();
+
+        _timeToStartGame = Time.time + Random.Range(_minSecsToStartGame, _maxSecsToStartGame);
+
+        StartCoroutine(StartGameNextbots(_timeToStartGame));
+    }
+
+    private IEnumerator StartGameNextbots(float timeToStartGame)
+    {
+        yield return new WaitForSeconds(timeToStartGame);
+        _nextbotPlacer.CreateNextbots();
+        _chaseManager.Initialize();
+        IsGameStarted = true;
+        FindObjectOfType<StopwatchUI>().StartStopwatch();
     }
 }

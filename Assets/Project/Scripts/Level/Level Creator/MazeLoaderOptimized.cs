@@ -44,7 +44,18 @@ public class MazeLoaderOptimized : MonoBehaviour
 
         _isInitialized = true;
 
-        _mazeImage = _manager.MazeImage;
+        LoadImage();
+    }
+
+    private void LoadImage()
+    {
+        if (GameManager.CurrentMazeTexture == null)
+        {
+            Debug.LogError("Could not to load maze image");
+            return;
+        }
+
+        _mazeImage = GameManager.CurrentMazeTexture;
     }
 
     private void GenerateMaze()

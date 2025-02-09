@@ -38,14 +38,14 @@ public class UIWindow : MonoBehaviour
 
     public void ShowWindow()
     {
-        _group.DOFade(1, _fadeDuration);
+        _group.DOFade(1, _fadeDuration).SetUpdate(true);
         _group.interactable = true;
         _group.blocksRaycasts = true;
     }
 
     public void HideWindow()
     {
-        _group.DOFade(0, _fadeDuration);
+        _group.DOFade(0, _fadeDuration).SetUpdate(true);
         _group.interactable = false;
         _group.blocksRaycasts = false;
     }
@@ -65,21 +65,10 @@ public class UIWindow : MonoBehaviour
 
         for (int i = 0; i < _categories.Length; i++)
         {
-            if (i == categoryIndex)
-            {
-                _categories[i].CanvasGroup.DOFade(1, _fadeDuration);
-                _categories[i].CanvasGroup.interactable = true;
-                _categories[i].CanvasGroup.blocksRaycasts = true;
-                _categories[i].Button.GetComponentInChildren<TMPro.TMP_Text>().DOColor(Color.white, _fadeDuration);
-
-            }
-            else
-            {
-                _categories[i].CanvasGroup.DOFade(0, _fadeDuration);
-                _categories[i].CanvasGroup.interactable = false;
-                _categories[i].CanvasGroup.blocksRaycasts = false;
-                _categories[i].Button.GetComponentInChildren<TMPro.TMP_Text>().DOColor(_notShownCategoryButtonColor, _fadeDuration);
-            }
+            _categories[i].CanvasGroup.DOFade(i == categoryIndex ? 1 : 0, _fadeDuration).SetUpdate(true);
+            _categories[i].CanvasGroup.interactable = i == categoryIndex ? true : false;
+            _categories[i].CanvasGroup.blocksRaycasts = i == categoryIndex ? true : false;
+            _categories[i].Button.GetComponentInChildren<TMPro.TMP_Text>().DOColor(i == categoryIndex ? Color.white : _notShownCategoryButtonColor, _fadeDuration).SetUpdate(true);
         }
     }
     #endregion
