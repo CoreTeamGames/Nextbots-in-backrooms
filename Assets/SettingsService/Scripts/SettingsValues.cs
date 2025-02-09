@@ -1,94 +1,19 @@
-﻿using System.Collections.Generic;
-using UnityEngine.Audio;
-using UnityEngine;
-using System;
+﻿using UnityEngine;
 
 namespace CoreTeamGamesSDK.SettingsService
 {
+    /// <summary>
+    /// The asset with values for settings
+    /// </summary>
     [CreateAssetMenu(menuName = "CoreTeamSDK/Settings/Values")]
     public class SettingsValues : ScriptableObject
     {
-        [SerializeField] private AudioMixer _audioMixer;
-        [SerializeField] private string[] _exposedParameters;
-        [SerializeField] private List<SettingsValue> _settingsValues;
+        #region Variables
+        [SerializeField] private SettingsValueWithName[] _values;
+        #endregion
 
-        public List<SettingsValue> SettingsValuesList
-        {
-            get
-            {
-
-                List<SettingsValue> _values = new List<SettingsValue>();
-                foreach (var item in _settingsValues)
-                {
-                    _values.Add(item);
-                }
-                if (_audioMixer != null)
-                {
-                    string[] _mixerValues = GetExposedParameters(_audioMixer);
-                    if (_mixerValues.Length != 0)
-                    {
-                        foreach (var item in _mixerValues)
-                        {
-                            SettingsValue _value = new SettingsValue(item, ESettingsValueType.floatValue);
-                            if (_audioMixer.GetFloat(item, out float mixerFloatValue))
-                            {
-                                _value.floatValue = mixerFloatValue;
-                            }
-                            _values.Add(_value);
-                        }
-                    }
-                }
-                return _values;
-            }
-        }
-
-        private string[] GetExposedParameters(AudioMixer mixer)
-        {
-#if UNITY_EDITOR
-            List<string> exposedParams = new List<string>();
-
-            // Using reflection to access the AudioMixer's ExposedParameters
-            var dynMixer = new UnityEditor.SerializedObject(mixer);
-            var parameters = dynMixer.FindProperty("m_ExposedParameters");
-
-            if (parameters != null && parameters.isArray)
-            {
-                for (int i = 0; i < parameters.arraySize; i++)
-                {
-                    var param = parameters.GetArrayElementAtIndex(i);
-                    var nameProp = param.FindPropertyRelative("name");
-                    if (nameProp != null)
-                    {
-                        exposedParams.Add(nameProp.stringValue);
-                    }
-                }
-            }
-            _exposedParameters = exposedParams.ToArray();
-            return exposedParams.ToArray();
-#endif
-            return _exposedParameters;
-        }
+        #region Properties
+        public SettingsValueWithName[] Values => _values;
+        #endregion
     }
-    [Serializable]
-    public class SettingsValue
-    {
-        [SerializeField] private string _valueName;
-        [SerializeField] private ESettingsValueType _valueType;
-        public string stringValue;
-        public int intValue;
-        public float floatValue;
-        public bool boolValue;
-
-        public SettingsValue(string valueName, ESettingsValueType valueType)
-        {
-            _valueName = valueName;
-            _valueType = valueType;
-        }
-
-
-        public string ValueName => _valueName;
-        public ESettingsValueType ValueType => _valueType;
-    }
-
-
 }

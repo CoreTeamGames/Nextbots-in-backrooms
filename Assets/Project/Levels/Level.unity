@@ -6412,9 +6412,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad1fed997454c998287e76a4417ebc89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _allowAutoLoadSettings: 1
-  _settingsValuesBaseList: {fileID: 11400000, guid: 8eecede077cff0e4a8a33ccb6eb1077a,
-    type: 2}
+  _defaultValues: {fileID: 11400000, guid: 8eecede077cff0e4a8a33ccb6eb1077a, type: 2}
+  _fileName: Settings.json
+  _loadSettingsOnLevelLoad: 1
 --- !u!4 &730916233
 Transform:
   m_ObjectHideFlags: 0

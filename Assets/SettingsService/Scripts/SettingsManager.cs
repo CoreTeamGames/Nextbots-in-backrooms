@@ -1,179 +1,127 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
 using UnityEngine;
+using System.IO;
 using System;
-using System.Linq;
 
 namespace CoreTeamGamesSDK.SettingsService
 {
-    ///<summary>
-    /// The settings manager what can save and load settings
-    ///</summary>
+    [AddComponentMenu("CoreTeam Games SDK/Settings/Settings Manager",0)]
+    [DefaultExecutionOrder(-100)]
     public class SettingsManager : MonoBehaviour
     {
         #region Variables
-        [SerializeField] private bool _allowAutoLoadSettings = true;
-        [SerializeField] SettingsValues _settingsValuesBaseList;
-
-        private SettingsValue[] _settingsValues;
-        #endregion
-
-        #region Events
-        public delegate void OnValuesUpdate(SettingsValue[] values);
-        public delegate void OnValuesLoaded(SettingsValue[] values);
-        public delegate void OnValuesSaved();
-
-        public OnValuesUpdate OnValuesUpdateEvent;
-        public OnValuesLoaded OnValuesLoadedEvent;
-        public OnValuesSaved OnValuesSavedEvent;
+        [SerializeField] private SettingsValues _defaultValues;
+        [SerializeField] private string _fileName = "Settings.json";
+        [SerializeField] private bool _loadSettingsOnLevelLoad = true;
+        private static SettingsValueWithName[] _settingsValues = new SettingsValueWithName[0];
         #endregion
 
         #region Properties
-        public SettingsValues SettingsValuesBaseList => _settingsValuesBaseList;
-        public SettingsValue[] SettingsValues => _settingsValues;
+        public static SettingsManager Manager { get; private set; }
+        public static SettingsValueWithName[] SettingsValues { get => _settingsValues;}
+        #endregion
+
+        #region Events
+        public delegate void OnSettingsSaved(SettingsValueWithName[] values);
+        public static OnSettingsSaved OnSettingsSavedEvent;
+        public delegate void OnSettingsUpdates(SettingsValueWithName[] values);
+        public static OnSettingsUpdates OnSettingsUpdatesEvent;
+        public delegate void OnSettingsLoaded(SettingsValueWithName[] values, bool isDefaultValues);
+        public static OnSettingsLoaded OnSettingsLoadedEvent;
         #endregion
 
         #region Code
-        private void Start()
+        private void Awake()
         {
-            if (_allowAutoLoadSettings)
+            if (Manager != null)
             {
-                LoadSettings();
-            }
-        }
-
-        public void SetValues(SettingsValue[] values)
-        {
-            Dictionary<string, object> _values = new Dictionary<string, object>();
-            foreach (var value in values)
-            {
-                object _objectValue = null;
-
-                switch (value.ValueType)
-                {
-                    case ESettingsValueType.intValue:
-                        _objectValue = value.intValue;
-                        break;
-
-                    case ESettingsValueType.floatValue:
-                        _objectValue = value.floatValue;
-                        break;
-
-                    case ESettingsValueType.boolValue:
-                        _objectValue = value.boolValue;
-                        break;
-
-                    case ESettingsValueType.stringValue:
-                        _objectValue = value.stringValue;
-                        break;
-
-                    default:
-                        break;
-                }
-
-                _values.Add(value.ValueName.ToLower(), _objectValue);
+                Destroy(gameObject);
+                return;
             }
 
-            SettingsIO.WriteSettings(_values);
-            OnValuesUpdateEvent?.Invoke(values);
+            Manager = this;
+            DontDestroyOnLoad(Manager);
+            LoadSettings();
         }
 
-        public void UpdateValues(SettingsValue[] values)
+        public static void SaveSettings()
         {
-            //Describe method
-        }
-
-        public void LoadSettings()
-        {
-            _settingsValues = GetValues();
-
-            if (_settingsValues == null)
+            if (Manager == null)
+            {
+                Debug.LogError("SettingsManager is null!");
+                return;
+            }
+            if (_settingsValues.Length == 0)
                 return;
 
-            OnValuesLoadedEvent?.Invoke(_settingsValues);
-        }
-
-        public SettingsValue FindValue(string valueName)
-        {
-            valueName = valueName.ToLower();
-
-            foreach (var item in _settingsValues)
+            using (FileStream stream = new FileStream(Path.Combine(Application.persistentDataPath, Manager._fileName), FileMode.OpenOrCreate))
             {
-                if (item.ValueName.ToLower() == valueName)
-                    return item;
+                using (StreamWriter writer = new StreamWriter(stream))
+                {
+                    string file = JsonConvert.SerializeObject(_settingsValues);
+
+                    writer.WriteLine(file);
+                }
             }
 
-            return null;
+            OnSettingsSavedEvent?.Invoke(_settingsValues);
         }
 
-        public SettingsValue[] GetValues()
+        public static void LoadSettings()
         {
-            Dictionary<string, object> _values = SettingsIO.ReadSettings();
-            List<SettingsValue> _settingsValuesList = new List<SettingsValue>();
-
-            if (_values.Count > 0)
+            if (Manager == null)
             {
-                foreach (var value in _settingsValuesBaseList.SettingsValuesList)
+                Debug.LogError("SettingsManager is null!");
+                return;
+            }
+            if (Manager._defaultValues == null)
+            {
+                Debug.LogError("The DefaultValues in SettingsManager is null!");
+                return;
+            }
+            if (Manager._defaultValues.Values.Length == 0)
+                return;
+
+            _settingsValues = new SettingsValueWithName[Manager._defaultValues.Values.Length];
+            Array.Copy(Manager._defaultValues.Values, _settingsValues, Manager._defaultValues.Values.Length);
+
+            bool loadDefault = true;
+
+            if (File.Exists(Path.Combine(Application.persistentDataPath, Manager._fileName)))
+            {
+
+                SettingsValueWithName[] temp = new SettingsValueWithName[0];
+
+                using (FileStream stream = new FileStream(Path.Combine(Application.persistentDataPath, Manager._fileName), FileMode.Open))
                 {
-                    if (_values.ContainsKey(value.ValueName.ToLower()))
+                    using (StreamReader reader = new StreamReader(stream))
                     {
-                        _settingsValuesList.Add(new SettingsValue(value.ValueName, value.ValueType));
-
-                        switch (value.ValueType)
-                        {
-                            case ESettingsValueType.intValue:
-                                _settingsValuesList[_settingsValuesList.Count - 1].intValue = Convert.ToInt32(_values[value.ValueName.ToLower()]);
-                                break;
-
-                            case ESettingsValueType.floatValue:
-                                _settingsValuesList[_settingsValuesList.Count - 1].floatValue = Convert.ToSingle(_values[value.ValueName.ToLower()]);
-                                break;
-
-                            case ESettingsValueType.boolValue:
-                                _settingsValuesList[_settingsValuesList.Count - 1].boolValue = Convert.ToBoolean(_values[value.ValueName.ToLower()]);
-                                break;
-
-                            case ESettingsValueType.stringValue:
-                                _settingsValuesList[_settingsValuesList.Count - 1].stringValue = Convert.ToString(_values[value.ValueName.ToLower()]);
-                                break;
-
-                            default:
-                                break;
-                        }
+                        string file = reader.ReadToEnd();
+                        temp = JsonConvert.DeserializeObject<SettingsValueWithName[]>(file);
                     }
-                    else
+                }
+
+                if (temp.Length != 0)
+                {
+                    loadDefault = false;
+
+                    foreach (var item in temp)
                     {
-                        _settingsValuesList.Add(new SettingsValue(value.ValueName, value.ValueType));
-
-                        switch (value.ValueType)
+                        foreach (var value in _settingsValues)
                         {
-                            case ESettingsValueType.intValue:
-                                _settingsValuesList[_settingsValuesList.Count - 1].intValue = value.intValue;
-                                break;
-
-                            case ESettingsValueType.floatValue:
-                                _settingsValuesList[_settingsValuesList.Count - 1].floatValue = value.floatValue;
-                                break;
-
-                            case ESettingsValueType.boolValue:
-                                _settingsValuesList[_settingsValuesList.Count - 1].boolValue = value.boolValue;
-                                break;
-
-                            case ESettingsValueType.stringValue:
-                                _settingsValuesList[_settingsValuesList.Count - 1].stringValue = value.stringValue;
-                                break;
-
-                            default:
-                                break;
+                            if (value.Name == item.Name && value.Value.GetType().Name == item.Value.GetType().Name)
+                                value.Value = item.Value;
                         }
                     }
                 }
-                return _settingsValuesList.ToArray();
             }
-            else
-            {
-                return _settingsValuesBaseList.SettingsValuesList.ToArray();
-            }
+            OnSettingsLoadedEvent?.Invoke(_settingsValues, loadDefault);
         }
-        #endregion
+    
+        public static void UpdateSettings()
+        {
+            OnSettingsUpdatesEvent?.Invoke(_settingsValues);
+        }
     }
+    #endregion
 }

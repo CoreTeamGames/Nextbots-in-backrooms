@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d155f8234f0309f6b971d8cf66ec8f0, type: 3}
+  m_Name: New Settings Values
+  m_EditorClassIdentifier: 
+  _values:
+  - _name: Volume
+    _value:
+      id: 0
+  - _name: MusicVolume
+    _value:
+      id: 1
+  - _name: Resolution
+    _value:
+      id: 2
+  references:
+    version: 1
+    00000000:
+      type: {class: Single, ns: System, asm: mscorlib}
+    00000001:
+      type: {class: Single, ns: System, asm: mscorlib}
+    00000002:
+      type: {class: Resolution, ns: UnityEngine, asm: UnityEngine.CoreModule}

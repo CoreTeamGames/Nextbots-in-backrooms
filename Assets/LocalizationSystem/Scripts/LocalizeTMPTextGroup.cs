@@ -2,7 +2,6 @@
 using UnityEngine;
 using System;
 using TMPro;
-using CoreTeamGamesSDK.Localization;
 
 namespace CoreTeamGamesSDK.Localization
 {
@@ -46,6 +45,7 @@ namespace CoreTeamGamesSDK.Localization
             List<string> _lineKeys = new List<string>();
             foreach (var localizeTMPTextGroupMember in _localizeTMPTextGroupMembers)
             {
+                if (!_lineKeys.Contains(localizeTMPTextGroupMember.LineKey))
                 _lineKeys.Add(localizeTMPTextGroupMember.LineKey);
             }
 

@@ -12,59 +12,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d155f8234f0309f6b971d8cf66ec8f0, type: 3}
   m_Name: SettingsValues
   m_EditorClassIdentifier: 
-  _audioMixer: {fileID: 24100000, guid: 61a48b6df51ba5ef7acab299e07499a0, type: 2}
-  _settingsValues:
-  - _valueName: Resolution
-    _valueType: 0
-    stringValue: 
-    intValue: 0
-    floatValue: 0
-    boolValue: 0
-  - _valueName: Fullscreen
-    _valueType: 2
-    stringValue: 
-    intValue: 0
-    floatValue: 0
-    boolValue: 0
-  - _valueName: EnablePostprocess
-    _valueType: 2
-    stringValue: 
-    intValue: 0
-    floatValue: 0
-    boolValue: 0
-  - _valueName: Fog
-    _valueType: 2
-    stringValue: 
-    intValue: 0
-    floatValue: 0
-    boolValue: 0
-  - _valueName: DrawDistance
-    _valueType: 1
-    stringValue: 
-    intValue: 0
-    floatValue: 0
-    boolValue: 0
-  - _valueName: SFXVolume
-    _valueType: 1
-    stringValue: 
-    intValue: 0
-    floatValue: 0
-    boolValue: 0
-  - _valueName: UIVolume
-    _valueType: 1
-    stringValue: 
-    intValue: 0
-    floatValue: 0
-    boolValue: 0
-  - _valueName: MusicVolume
-    _valueType: 1
-    stringValue: 
-    intValue: 0
-    floatValue: 0
-    boolValue: 0
-  - _valueName: Shadows
-    _valueType: 2
-    stringValue: 
-    intValue: 0
-    floatValue: 0
-    boolValue: 0
+  _values:
+  - _name: Language
+    _value:
+      id: 0
+  - _name: Resolution
+    _value:
+      id: 1
+  - _name: SFXVolume
+    _value:
+      id: 2
+  - _name: UIVolume
+    _value:
+      id: 3
+  - _name: MusicVolume
+    _value:
+      id: 4
+  - _name: PostProcess
+    _value:
+      id: 5
+  - _name: Fog
+    _value:
+      id: 6
+  - _name: Fullscreen
+    _value:
+      id: 7
+  - _name: Shadows
+    _value:
+      id: 8
+  - _name: DrawDistance
+    _value:
+      id: 9
+  references:
+    version: 1
+    00000000:
+      type: {class: String, ns: System, asm: mscorlib}
+    00000001:
+      type: {class: Resolution, ns: UnityEngine, asm: UnityEngine.CoreModule}
+    00000002:
+      type: {class: Single, ns: System, asm: mscorlib}
+    00000003:
+      type: {class: Single, ns: System, asm: mscorlib}
+    00000004:
+      type: {class: Single, ns: System, asm: mscorlib}
+    00000005:
+      type: {class: Boolean, ns: System, asm: mscorlib}
+    00000006:
+      type: {class: Boolean, ns: System, asm: mscorlib}
+    00000007:
+      type: {class: Boolean, ns: System, asm: mscorlib}
+    00000008:
+      type: {class: Boolean, ns: System, asm: mscorlib}
+    00000009:
+      type: {class: Int32, ns: System, asm: mscorlib}
