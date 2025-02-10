@@ -98,7 +98,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 0
+  m_UseShadowmask: 1
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -314,6 +314,75 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &115816440
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 280.2527
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 123.371086
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -123.30015
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667121, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535220145201667126, guid: 619560df0d476f743820e57573afd983,
+        type: 3}
+      propertyPath: m_Name
+      value: Random Sounds Audio Source
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 619560df0d476f743820e57573afd983, type: 3}
 --- !u!114 &124168397
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5790,6 +5859,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _text: {fileID: 556993623}
+  _fadeDuration: 0.2
 --- !u!222 &556993622
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6070,7 +6140,7 @@ MonoBehaviour:
   _ceilingMaterial: {fileID: 2100000, guid: c75aa1bcd466bfb46b23d74cd1825015, type: 2}
   _wallMaterial: {fileID: 2100000, guid: 7e9931e5f13db034fa1ddbaabfb8ae9d, type: 2}
   wallHeight: 4
-  _countOfMeshesInCombinedMesh: 1000
+  _countOfMeshesInCombinedMesh: 500
   _lampPrefab: {fileID: 1898430548923371722, guid: d8722b22e4ec9407a9ce9a3c52327806,
     type: 3}
   _lampOffset: 10
@@ -6763,7 +6833,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 18
+  m_RootOrder: 19
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &917773884
 GameObject:
@@ -6919,7 +6989,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 17
+  m_RootOrder: 18
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1 &1140793279
 GameObject:
@@ -8041,7 +8111,6 @@ MonoBehaviour:
   _maxSpawnAttempts: 40
   _minDistantionFromPlayer: 50
   _timeToStartGame: 0
-  _filename: backrooms.png
   _shotgunPrefab: {fileID: 204323036791759997, guid: 5f87a236f8962724ab7b928c4342b09a,
     type: 3}
   _player: {fileID: 3728584533395303915}
@@ -8240,7 +8309,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 16
+  m_RootOrder: 17
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1699865646
 GameObject:
@@ -9292,7 +9361,7 @@ PrefabInstance:
     - target: {fileID: 5745847545061265140, guid: 3d9adb98a9b08174994baef527becfe2,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 611.86115
       objectReference: {fileID: 0}
     - target: {fileID: 5745847545061265140, guid: 3d9adb98a9b08174994baef527becfe2,
         type: 3}

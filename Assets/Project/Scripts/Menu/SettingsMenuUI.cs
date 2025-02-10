@@ -201,6 +201,15 @@ public class SettingsMenuUI : MonoBehaviour
     
     public void SaveSettings()
     {
+
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "drawdistance").Value = (int)_drawDistanceSlider.value * 10;
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "uivolume").Value = _uiVolumeSlider.value;
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "musicvolume").Value = _musicVolumeSlider.value;
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "sfxvolume").Value = _sfxVolumeSlider.value;
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "shadows").Value = (object)_shadowsToggle.isOn;
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "postprocess").Value = (object)_postProcessToggle.isOn;
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "fog").Value = (object)_fogToggle.isOn;
+
         SettingsManager.SaveSettings();
     }
     #endregion
