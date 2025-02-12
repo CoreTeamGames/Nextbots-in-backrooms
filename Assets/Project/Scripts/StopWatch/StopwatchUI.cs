@@ -27,13 +27,19 @@ public class StopwatchUI : MonoBehaviour
     public void StartStopwatch()
     {
         if (LevelManager.IsGameStarted)
+        {
             _stopwatch.Start();
+            ShowStopwatch(true);
+        }
     }
 
     public void StopStopwatch()
     {
         if (LevelManager.IsGameStarted)
+        {
             _stopwatch.Stop();
+            ShowStopwatch(false);
+        }
     }
 
     public void OnGamePause(bool isPaused)

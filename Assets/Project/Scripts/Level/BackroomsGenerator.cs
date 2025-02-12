@@ -337,14 +337,9 @@ public class BackroomsGenerator : MonoBehaviour
 
         OnMapStartsCreatesEvent?.Invoke();
 
-        OnMapCreateStateChangedEvent?.Invoke("generateMaze");
         await Task.Run(GenerateMaze);
-        OnMapCreateStateChangedEvent?.Invoke("generateRooms");
         await Task.Run(GenerateRooms);
-        OnMapCreateStateChangedEvent?.Invoke("saveFile");
         SaveToPng();
         OnMapCreatedEvent?.Invoke();
-
-        Debug.Log(Application.persistentDataPath + "/backrooms.png");
     }
 }

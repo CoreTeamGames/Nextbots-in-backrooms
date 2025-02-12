@@ -142,8 +142,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _minTimeToPlaySound: 20
-  _maxTimeToPlaySound: 70
-  _probalityToPlaySound: 0.4
+  _maxTimeToPlaySound: 30
+  _probalityToPlaySound: 0.5
   _audioSource: {fileID: 4535220145201667120}
   _maxAttemptsToPlaySounds: 1
   _sounds:

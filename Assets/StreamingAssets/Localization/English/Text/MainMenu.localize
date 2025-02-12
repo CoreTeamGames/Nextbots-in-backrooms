@@ -1,0 +1,21 @@
+﻿lineKey,text
+Singleplayer, Singleplayer
+Multiplayer, Multiplayer
+Settings, Settings
+Exit, Exit
+Configure, Configure
+Generate, Generate location
+Back, Back
+MazeSize, Location size
+BackroomsModeName, Backrooms Mode
+NextbotsModeName, Nextbots Mode
+FreeModeName, Free Mode
+BackroomsModeDescription, Canonical mode
+NextbotsModeDescription," That mode that can be described in 2 phrases: "Laugh like a horse" and "RUN, Forest, run!!!"
+FreeModeDescription," A mode where you are completely alone, or not? Is it loneliness, or the same solitude with oneself?
+GameMode, Game Mode
+LevelGeneration, Level Generation
+Start, Start
+BackroomsMode, "Backrooms"
+NextbotsMode, Nextbots
+FreeMode, FreeMode

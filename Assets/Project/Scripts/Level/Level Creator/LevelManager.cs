@@ -93,6 +93,8 @@ public class LevelManager : MonoBehaviour
         _loader.GenerateMap();
         _playerSpawner.SpawnPlayers();
 
+        Debug.Log($"Loading game in mode: {GameManager.CurrentGameMode}");
+
         switch (GameManager.CurrentGameMode)
         {
             case EGameModes.Backrooms:
@@ -137,7 +139,10 @@ public class LevelManager : MonoBehaviour
 
     private IEnumerator StartGameNextbots(float timeToStartGame)
     {
-        yield return new WaitForSeconds(timeToStartGame);
+        while (Time.time < timeToStartGame)
+        {
+            yield return null;
+        }
         _nextbotPlacer.CreateNextbots();
         _chaseManager.Initialize();
         IsGameStarted = true;

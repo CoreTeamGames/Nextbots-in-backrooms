@@ -1,0 +1,21 @@
+﻿lineKey,text
+Singleplayer, Одиночная игра
+Multiplayer, Сетевая игра
+Settings, Настройки
+Exit, Выход
+Configure, Конфигурация
+Generate, Сгенерировать локацию
+Back, Назад
+MazeSize, Размер локации
+BackroomsModeName, Режим "Закулисье"
+NextbotsModeName, Режим "Некстботы"
+FreeModeName, Свободный режим
+BackroomsModeDescription, Каноничный режим.
+NextbotsModeDescription," Тот режим, который можно описать 2 фразами: "Ржи как конь" и "БЕГИ, Форест, беги!!!"
+FreeModeDescription," Режим, где вы совершенно одни, или же нет? Одиночество ли это, или такое же уединение с самим собой?
+GameMode, Режим игры
+LevelGeneration, Генерация уровня
+Start, Начать
+BackroomsMode, "Закулисье"
+NextbotsMode, Некстботы
+FreeMode, Свободный режим
