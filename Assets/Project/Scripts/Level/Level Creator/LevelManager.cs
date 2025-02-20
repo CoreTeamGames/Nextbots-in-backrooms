@@ -143,7 +143,7 @@ public class LevelManager : MonoBehaviour
         {
             yield return null;
         }
-        _nextbotPlacer.CreateNextbots();
+        _nextbotPlacer.CreateNextbots(MazeImage.width/10);
         _chaseManager.Initialize();
         IsGameStarted = true;
         FindObjectOfType<StopwatchUI>().StartStopwatch();

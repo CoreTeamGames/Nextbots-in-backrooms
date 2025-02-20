@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c55a410914efbf44ba2065782dde5c51, type: 3}
   m_Name: Delgado
   m_EditorClassIdentifier: 
-  _sprite: {fileID: 21300000, guid: 18c5be8658fb9fd4e9e42f2e068e3287, type: 3}
+  _texture: {fileID: 2800000, guid: 18c5be8658fb9fd4e9e42f2e068e3287, type: 3}

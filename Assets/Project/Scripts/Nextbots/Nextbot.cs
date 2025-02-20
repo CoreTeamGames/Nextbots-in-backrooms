@@ -1,11 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Game/Nextbot")]
 public class Nextbot : ScriptableObject
 {
-    [SerializeField] private Sprite _sprite;
+    [SerializeField] private Texture2D _texture;
 
-    public Sprite Sprite => _sprite;
+    public Texture2D Texture {get { return _texture; } set { _texture = value; }}
 }

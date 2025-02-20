@@ -2,24 +2,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 
 public class SettingsMenu : MonoBehaviour
 {
-    private List<Resolution> _resolutions = new List<Resolution>();
-
     private void Start()
     {
-        foreach (var screenResolution in Screen.resolutions)
-        {
-            _resolutions.Add(screenResolution);
-        }
-
         SettingsManager.OnSettingsUpdatesEvent += Apply;
         SettingsManager.OnSettingsLoadedEvent += Apply;
-
-
     }
 
     private void OnDestroy()
@@ -35,7 +27,7 @@ public class SettingsMenu : MonoBehaviour
             switch (value.Name.ToLower())
             {
                 case "resolution":
-                    ChangeResolution((Resolution)value.Value,isDefault);
+                    ChangeResolution((Resolution)value.Value, isDefault);
                     break;
 
                 case "fullscreen":
@@ -80,7 +72,7 @@ public class SettingsMenu : MonoBehaviour
         {
             foreach (Light light in lights)
             {
-                light.shadows = boolValue? LightShadows.Hard: LightShadows.None;
+                light.shadows = boolValue ? LightShadows.Hard : LightShadows.None;
             }
         }
     }
@@ -105,14 +97,12 @@ public class SettingsMenu : MonoBehaviour
 
     private void ChangeResolution(Resolution resolution, bool isDefault)
     {
-        Resolution curentResolution = resolution;
+        Resolution currentResolution = new Resolution() { width = Display.main.renderingWidth, height = Display.main.renderingHeight };
 
-        if (isDefault)
-        {
-            curentResolution = Screen.currentResolution;
-        }
+        if (!isDefault || ( resolution.width > 0 && resolution.height > 0))
+            currentResolution = resolution;
 
-        Screen.SetResolution(curentResolution.width, curentResolution.height, Screen.fullScreen);
+        Screen.SetResolution(currentResolution.width, currentResolution.height, Screen.fullScreen);
     }
 
     private void EnableFullscreen(bool boolValue)

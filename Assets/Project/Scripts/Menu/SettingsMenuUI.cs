@@ -30,14 +30,25 @@ public class SettingsMenuUI : MonoBehaviour
 
     private SettingsValueWithName[] _values;
     private List<Resolution> _resolutions;
+
+    private bool _isDefault;
     #endregion
 
     #region Code
+    private void Awake()
+    {
+        SettingsManager.OnSettingsLoadedEvent += (SettingsValueWithName[] v, bool d) => { _isDefault = d; };
+    }
+
+    private void OnDestroy()
+    {
+        SettingsManager.OnSettingsLoadedEvent -= (SettingsValueWithName[] v, bool d) => { _isDefault = d; };
+    }
+
     public void Start()
     {
         Initialize();
-        SetupValues(SettingsManager.SettingsValues, false);
-
+        SetupValues(SettingsManager.SettingsValues, _isDefault);
     }
 
     private void Initialize()
@@ -56,8 +67,8 @@ public class SettingsMenuUI : MonoBehaviour
 
     private void OnDrawDistanceChanged(float drawDistance)
     {
-        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "drawdistance").Value = (int)drawDistance*10;
-        _values.Single(t => t.Name.ToLower() == "drawdistance").Value = (int)drawDistance*10;
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "drawdistance").Value = (int)drawDistance * 10;
+        _values.Single(t => t.Name.ToLower() == "drawdistance").Value = (int)drawDistance * 10;
         SettingsManager.OnSettingsUpdatesEvent?.Invoke(SettingsManager.SettingsValues);
     }
 
@@ -114,28 +125,19 @@ public class SettingsMenuUI : MonoBehaviour
 
                     Resolution loadedResolution = (Resolution)value.Value;
 
-                    int resolutionIndex = 0;
-                    bool AddCustomResolution = true;
+                    int resolutionIndex = -1;
 
                     for (int x = 0; x < Screen.resolutions.Length; x++)
                     {
                         _resolutions.Add(Screen.resolutions[x]);
-                        if (Screen.resolutions[x].width == loadedResolution.width && Screen.resolutions[x].height == loadedResolution.height && !isDefault)
-                        {
-                            AddCustomResolution = false;
+
+                        if (Screen.currentResolution.width == Screen.resolutions[x].width && Screen.currentResolution.height == Screen.resolutions[x].height)
                             resolutionIndex = x;
-                        }
-                        else if (isDefault && Screen.resolutions[x].width == Screen.currentResolution.width && Screen.resolutions[x].height == Screen.currentResolution.height)
-                        {
-                            AddCustomResolution = false;
-                            resolutionIndex = x;
-                        }
                     }
 
-                    if(AddCustomResolution)
+                    if (resolutionIndex == -1)
                     {
-                        _resolutions.Add(loadedResolution);
-                        resolutionIndex = _resolutions.Count;
+                        resolutionIndex = Screen.resolutions.Length;
                     }
 
                     _resolutionsDropdown.ClearOptions();
@@ -158,7 +160,7 @@ public class SettingsMenuUI : MonoBehaviour
                     break;
 
                 case "drawdistance":
-                    _drawDistanceSlider.SetValueWithoutNotify((int)value.Value/10);
+                    _drawDistanceSlider.SetValueWithoutNotify((int)value.Value / 10);
                     break;
 
                 case "shadows":
@@ -198,7 +200,7 @@ public class SettingsMenuUI : MonoBehaviour
         _values.Single(t => t.Name.ToLower() == "resolution").Value = _resolutions[index];
         SettingsManager.OnSettingsUpdatesEvent?.Invoke(SettingsManager.SettingsValues);
     }
-    
+
     public void SaveSettings()
     {
 
@@ -209,6 +211,7 @@ public class SettingsMenuUI : MonoBehaviour
         SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "shadows").Value = (object)_shadowsToggle.isOn;
         SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "postprocess").Value = (object)_postProcessToggle.isOn;
         SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "fog").Value = (object)_fogToggle.isOn;
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "resolution").Value = _resolutions[_resolutions.IndexOf(Screen.currentResolution)];
 
         SettingsManager.SaveSettings();
     }
