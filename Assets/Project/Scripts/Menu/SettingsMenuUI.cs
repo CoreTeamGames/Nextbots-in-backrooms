@@ -28,6 +28,9 @@ public class SettingsMenuUI : MonoBehaviour
     [Header("Language Settings")]
     [SerializeField] private Button _languageButtonPrefab;
 
+    [Header("Language Settings")]
+    [SerializeField] private Slider _sensivitySlider;
+
     private SettingsValueWithName[] _values;
     private List<Resolution> _resolutions;
 
@@ -63,6 +66,14 @@ public class SettingsMenuUI : MonoBehaviour
         _musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
         _uiVolumeSlider.onValueChanged.AddListener(OnUIVolumeChanged);
         _drawDistanceSlider.onValueChanged.AddListener(OnDrawDistanceChanged);
+        _sensivitySlider.onValueChanged.AddListener(OnSensivityChanged);
+    }
+
+    private void OnSensivityChanged(float sensivity)
+    {
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "sensivity").Value = sensivity;
+        _values.Single(t => t.Name.ToLower() == "sensivity").Value = sensivity;
+        SettingsManager.OnSettingsUpdatesEvent?.Invoke(SettingsManager.SettingsValues);
     }
 
     private void OnDrawDistanceChanged(float drawDistance)
@@ -167,6 +178,9 @@ public class SettingsMenuUI : MonoBehaviour
                     _shadowsToggle.SetIsOnWithoutNotify((bool)value.Value);
                     break;
 
+                case "sensivity":
+                    _sensivitySlider.SetValueWithoutNotify((float)value.Value);
+                    break;
 
                 default:
 
@@ -212,6 +226,7 @@ public class SettingsMenuUI : MonoBehaviour
         SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "postprocess").Value = (object)_postProcessToggle.isOn;
         SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "fog").Value = (object)_fogToggle.isOn;
         SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "resolution").Value = _resolutions[_resolutions.IndexOf(Screen.currentResolution)];
+        SettingsManager.SettingsValues.Single(t => t.Name.ToLower() == "sensivity").Value = _sensivitySlider.value;
 
         SettingsManager.SaveSettings();
     }

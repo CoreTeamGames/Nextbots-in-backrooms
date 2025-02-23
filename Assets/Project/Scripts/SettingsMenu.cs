@@ -49,7 +49,9 @@ public class SettingsMenu : MonoBehaviour
                 case "shadows":
                     EnableShadows((bool)value.Value);
                     break;
-
+                case "sensivity":
+                    ChangeSensivity((float)value.Value);
+                    break;
 
                 default:
 
@@ -57,6 +59,16 @@ public class SettingsMenu : MonoBehaviour
             }
 
         }
+    }
+
+    private void ChangeSensivity(float value)
+    {
+        CameraController camera = FindObjectOfType<CameraController>();
+
+        if (camera == null)
+            return;
+
+        camera.SetSensivity(value);
     }
 
     public void Apply(SettingsValueWithName[] values)

@@ -1,13 +1,7 @@
 using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Drawing;
-using UnityEngine;
 using System.IO;
 using System;
-
-using Graphics = System.Drawing.Graphics;
-using Color = System.Drawing.Color;
-using Random = System.Random;
+using UnityEngine;
 using System.Threading.Tasks;
 
 public class BackroomsGenerator : MonoBehaviour
@@ -16,7 +10,7 @@ public class BackroomsGenerator : MonoBehaviour
     private List<(int x, int y)> spawnPoints = new List<(int x, int y)>();
     private int _wallThickness = 1;
     private int _cellSize = 1;
-    private Random random = new Random();
+    private System.Random random = new System.Random();
     private Cell[,] maze;
     private int numMazes, mazeSize, roomsCount, NUM_COLS, NUM_ROWS;
     private float stopCollisionProbality;
@@ -28,7 +22,7 @@ public class BackroomsGenerator : MonoBehaviour
     public OnMapCreated OnMapCreatedEvent;
 
     public delegate void OnMapCreateStateChanged(string stateName);
-    public  OnMapCreateStateChanged OnMapCreateStateChangedEvent;
+    public OnMapCreateStateChanged OnMapCreateStateChangedEvent;
 
     public string FileName => _fileName;
 
@@ -57,9 +51,7 @@ public class BackroomsGenerator : MonoBehaviour
         {
             for (int x = 0; x < NUM_COLS; x++)
             {
-                // Верхняя стена
                 maze[y, x].Visited = false;
-                // Нижняя стена
                 maze[NUM_ROWS - 1 - y, x].Visited = false;
             }
         }
@@ -69,9 +61,7 @@ public class BackroomsGenerator : MonoBehaviour
         {
             for (int y = 0; y < NUM_ROWS; y++)
             {
-                // Левая стена
                 maze[y, x].Visited = false;
-                // Правая стена
                 maze[y, NUM_COLS - 1 - x].Visited = false;
             }
         }
@@ -95,18 +85,15 @@ public class BackroomsGenerator : MonoBehaviour
 
         for (int mazeCount = 0; mazeCount < numMazes; mazeCount++)
         {
-            // Выбираем случайную стартовую точку
             int startX = random.Next(pathWidth, NUM_COLS - pathWidth);
             int startY = random.Next(pathWidth, NUM_ROWS - pathWidth);
 
-            // Убедимся, что стартовая точка выровнена по сетке
             startX = startX - (startX % pathWidth);
             startY = startY - (startY % pathWidth);
 
             visitedCells.Add((startX, startY));
             List<(int x, int y)> frontier = new List<(int x, int y)> { (startX, startY) };
 
-            // Создаем начальную комнату
             CreateWidePassage(startX, startY, pathWidth);
 
             while (frontier.Count > 0)
@@ -120,10 +107,8 @@ public class BackroomsGenerator : MonoBehaviour
                 {
                     if (random.NextDouble() > stopCollisionProbality)
                     {
-                        // Создаем проход до соседа
                         CreateWidePassage(neighbor.x, neighbor.y, pathWidth);
 
-                        // Создаем проход между текущей точкой и соседом
                         int midX = (current.x + neighbor.x) / 2;
                         int midY = (current.y + neighbor.y) / 2;
                         CreateWidePassage(midX, midY, pathWidth);
@@ -158,10 +143,10 @@ public class BackroomsGenerator : MonoBehaviour
         var neighbors = new List<(int x, int y)>();
         int[][] directions = new int[][]
         {
-        new int[] {-spacing * 2, 0},
-        new int[] {spacing * 2, 0},
-        new int[] {0, -spacing * 2},
-        new int[] {0, spacing * 2}
+            new int[] {-spacing * 2, 0},
+            new int[] {spacing * 2, 0},
+            new int[] {0, -spacing * 2},
+            new int[] {0, spacing * 2}
         };
 
         foreach (var dir in directions)
@@ -169,14 +154,12 @@ public class BackroomsGenerator : MonoBehaviour
             int newX = x + dir[0];
             int newY = y + dir[1];
 
-            // Проверяем границы с учетом толщины стен
             if (newX >= _wallThickness + spacing &&
                 newX < NUM_COLS - _wallThickness - spacing &&
                 newY >= _wallThickness + spacing &&
                 newY < NUM_ROWS - _wallThickness - spacing &&
                 !visited.Contains((newX, newY)))
             {
-                // Проверяем, не пересекается ли новый проход с существующими
                 bool canAdd = true;
                 for (int checkY = newY - spacing; checkY <= newY + spacing; checkY++)
                 {
@@ -212,14 +195,13 @@ public class BackroomsGenerator : MonoBehaviour
             int attempts = 0;
             bool roomPlaced = false;
 
-            while (attempts < 50 && !roomPlaced) // Ограничиваем количество попыток
+            while (attempts < 50 && !roomPlaced)
             {
-                int roomWidth = random.Next(15, 25);  // Большие комнаты
+                int roomWidth = random.Next(15, 25);
                 int roomHeight = random.Next(15, 25);
                 int x = random.Next(2, NUM_COLS - roomWidth - 2);
                 int y = random.Next(2, NUM_ROWS - roomHeight - 2);
 
-                // Проверяем перекрытие с существующими комнатами
                 bool overlaps = false;
                 foreach (var room in rooms)
                 {
@@ -235,7 +217,6 @@ public class BackroomsGenerator : MonoBehaviour
                 {
                     rooms.Add((x, y, roomWidth, roomHeight));
 
-                    // Создаем комнату
                     for (int ry = y; ry < y + roomHeight; ry++)
                     {
                         for (int rx = x; rx < x + roomWidth; rx++)
@@ -244,12 +225,10 @@ public class BackroomsGenerator : MonoBehaviour
                         }
                     }
 
-                    // Добавляем колонны в комнату
                     for (int py = y + 4; py < y + roomHeight - 4; py += 6)
                     {
                         for (int px = x + 4; px < x + roomWidth - 4; px += 6)
                         {
-                            // Создаем колонну 2x2
                             for (int cy = 0; cy < 2; cy++)
                             {
                                 for (int cx = 0; cx < 2; cx++)
@@ -271,38 +250,51 @@ public class BackroomsGenerator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Сохраняет лабиринт в PNG-файл без использования System.Drawing
+    /// </summary>
     public void SaveToPng()
     {
-        using (Bitmap bmp = new Bitmap(mazeSize, mazeSize))
+        // Создаем текстуру нужного размера
+        Texture2D texture = new Texture2D(mazeSize, mazeSize, TextureFormat.RGB24, false);
+        // Заполняем текстуру цветом фона (черным)
+        Color32[] pixels = new Color32[mazeSize * mazeSize];
+        for (int i = 0; i < pixels.Length; i++)
         {
-            using (Graphics g = Graphics.FromImage(bmp))
-            {
-                g.Clear(Color.FromArgb(0, 0, 0));
+            pixels[i] = new Color32(0, 0, 0, 255);
+        }
+        texture.SetPixels32(pixels);
 
-                // Рисуем лабиринт
-                for (int y = 0; y < NUM_ROWS; y++)
+        // Рисуем лабиринт: если клетка Visited == true, ставим белый цвет
+        for (int y = 0; y < NUM_ROWS; y++)
+        {
+            for (int x = 0; x < NUM_COLS; x++)
+            {
+                if (maze[y, x].Visited)
                 {
-                    for (int x = 0; x < NUM_COLS; x++)
+                    int startX = maze[y, x].X;
+                    int startY = maze[y, x].Y;
+                    int cellWidth = maze[y, x].Width;
+
+                    for (int py = startY; py < startY + cellWidth; py++)
                     {
-                        if (maze[y, x].Visited)
+                        for (int px = startX; px < startX + cellWidth; px++)
                         {
-                            using (SolidBrush brush = new SolidBrush(Color.FromArgb(255, 255, 255)))
-                            {
-                                g.FillRectangle(brush,
-                                    maze[y, x].X,
-                                    maze[y, x].Y,
-                                    maze[y, x].Width,
-                                    maze[y, x].Width);
-                            }
+                            // Устанавливаем пиксель белым
+                            texture.SetPixel(px, py, Color.white);
                         }
                     }
                 }
             }
-            bmp.Save(Application.persistentDataPath + "/" + _fileName + ".png", ImageFormat.Png);
         }
+
+        texture.Apply();
+
+        // Сохраняем текстуру в формате PNG
+        byte[] pngData = texture.EncodeToPNG();
+        File.WriteAllBytes(Path.Combine(Application.persistentDataPath, _fileName + ".png"), pngData);
     }
 
-    // Измените метод Generate
     public async Task Generate(int numMazes, float stopCollisionProbality, int mazeSize, int rooms)
     {
         this.numMazes = numMazes;
@@ -313,24 +305,23 @@ public class BackroomsGenerator : MonoBehaviour
     }
 
     /// <summary>
-    /// This method returns a Backrooms maze map image
+    /// Загружает лабиринт из PNG-файла
     /// </summary>
-    /// <param name="filename">The name of file without extension</param>
-    /// <returns></returns>
     public Texture2D LoadMaze(string filename)
     {
-        if (!File.Exists(Application.persistentDataPath +"/" +filename + ".png"))
+        string filePath = Path.Combine(Application.persistentDataPath, filename + ".png");
+        if (!File.Exists(filePath))
             return null;
 
+        byte[] fileData = File.ReadAllBytes(filePath);
         Texture2D _mazeTexture = new Texture2D(1, 1);
         _mazeTexture.filterMode = FilterMode.Point;
-        _mazeTexture.LoadImage(File.ReadAllBytes(Application.persistentDataPath + "/" + filename + ".png"));
-
+        _mazeTexture.LoadImage(fileData);
         return _mazeTexture;
     }
 
     async Task GenerateBackroomsMaze()
-    {  
+    {
         NUM_COLS = mazeSize / _cellSize;
         NUM_ROWS = mazeSize / _cellSize;
         maze = new Cell[NUM_ROWS, NUM_COLS];

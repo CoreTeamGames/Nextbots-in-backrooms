@@ -64,7 +64,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnJump(InputAction.CallbackContext context)
     {
-        if (_movementController != null && context.performed)
+        if (_movementController != null)
         {
             _movementController.Jump();
         }

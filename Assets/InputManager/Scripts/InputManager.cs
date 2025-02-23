@@ -11,7 +11,7 @@ namespace CoreTeamGamesSDK.Input.Management
         #region Variables
         private PlayerInput _playerInput;
         private InputActionAsset _inputActions;
-        private Dictionary<string, Action<InputAction.CallbackContext>> _inputEvents;
+        private static Dictionary<string, Action<InputAction.CallbackContext>> _inputEvents;
         #endregion
 
         #region Properties
@@ -19,6 +19,7 @@ namespace CoreTeamGamesSDK.Input.Management
         /// The instance of InputManager
         /// </summary>
         public static InputManager Instance { get; private set; }
+        public static Dictionary<string, Action<InputAction.CallbackContext>> InputEvents => _inputEvents;
         #endregion
 
         #region Code

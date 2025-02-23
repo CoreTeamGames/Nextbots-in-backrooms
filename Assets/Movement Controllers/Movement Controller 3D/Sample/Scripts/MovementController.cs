@@ -320,7 +320,7 @@ public class MovementController : MovementControllerBase
             // Тратим стамину при беге
             Stamina -= _staminaDrainRatePerSecond * Time.deltaTime;
         }
-        else if (!_isRun && IsGrounded)
+        else if ((!_isRun|| !IsMove) && IsGrounded)
         {
             // Восстанавливаем стамину, если не бежим или не двигаемся
             Stamina += (IsMove?_staminaRegenRatePerSecond:_staminaRegenRatePerSecondNoMove) * Time.deltaTime;

@@ -43,6 +43,9 @@ MonoBehaviour:
   - _name: DrawDistance
     _value:
       id: 9
+  - _name: Sensivity
+    _value:
+      id: 10
   references:
     version: 1
     00000000:
@@ -65,3 +68,5 @@ MonoBehaviour:
       type: {class: Boolean, ns: System, asm: mscorlib}
     00000009:
       type: {class: Int32, ns: System, asm: mscorlib}
+    0000000A:
+      type: {class: Single, ns: System, asm: mscorlib}

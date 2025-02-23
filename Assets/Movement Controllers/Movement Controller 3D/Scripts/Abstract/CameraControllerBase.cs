@@ -5,18 +5,18 @@ namespace CoreTeamGamesSDK.MovementController.ThreeD
     public abstract class CameraControllerBase : MonoBehaviour
     {
         #region Variables
-        [SerializeField] private float _sensivity;
+        [SerializeField] protected float sensivity = 2f;
         [SerializeField] private float _minXAngle = -90;
         [SerializeField] private float _maxXAngle = 90;
-        [SerializeField] private bool _invertX;
-        [SerializeField] private bool _invertY;
+        [SerializeField] protected bool _invertX;
+        [SerializeField] protected bool _invertY;
         #endregion
 
         #region Properties
         /// <summary>
         /// The sensivity of camera
         /// </summary>
-        public float Sensivity => _sensivity;
+        public float Sensivity => sensivity;
         /// <summary>
         /// The minimal vertical look angle of camera
         /// </summary>

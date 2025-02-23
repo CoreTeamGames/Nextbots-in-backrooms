@@ -29,9 +29,9 @@ public class CameraController : CameraControllerBase
 
     public override void Look(Vector2 lookVector)
     {
-        if (cameraTransform == null || playerBody == null || PauseMenu.IsPaused || _blockInput)
+        if (cameraTransform == null || playerBody == null || Time.timeScale == 0 || _blockInput)
             return;
-
+        
         float mouseX = lookVector.x * Sensivity * (InvertX ? -1 : 1);
         float mouseY = lookVector.y * Sensivity * (InvertY ? -1 : 1);
 
@@ -53,6 +53,12 @@ public class CameraController : CameraControllerBase
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    public void SetSensivity(float sensivity)
+    {
+        if (sensivity > 0)
+            base.sensivity = sensivity;
     }
     #endregion
 }
