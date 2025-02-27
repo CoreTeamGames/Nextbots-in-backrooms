@@ -9,8 +9,7 @@ namespace CoreTeamGamesSDK.Input.Management
     public class InputManager : MonoBehaviour
     {
         #region Variables
-        private PlayerInput _playerInput;
-        private InputActionAsset _inputActions;
+        [SerializeField] private InputActionAsset _inputActions;
         private static Dictionary<string, Action<InputAction.CallbackContext>> _inputEvents;
         #endregion
 
@@ -39,8 +38,9 @@ namespace CoreTeamGamesSDK.Input.Management
 
         private void InitializeInput()
         {
-            _playerInput = FindObjectOfType<PlayerInput>();
-            _inputActions = _playerInput.actions;
+            if (_inputActions == null)
+                return;
+
             _inputEvents = new Dictionary<string, Action<InputAction.CallbackContext>>();
 
             foreach (InputActionMap actionMap in _inputActions.actionMaps)
@@ -114,8 +114,6 @@ namespace CoreTeamGamesSDK.Input.Management
                 actionMap.Disable();
             }
         }
-
-        private void OnDestroy() => _inputEvents?.Clear();
         #endregion
     }
 }

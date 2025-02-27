@@ -526,6 +526,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5034982805688287403}
+  - component: {fileID: 640302342794175042}
+  - component: {fileID: 4703136037809712216}
+  - component: {fileID: 7177900086174443911}
   m_Layer: 5
   m_Name: SliderWithLabel
   m_TagString: Untagged
@@ -554,3 +557,45 @@ RectTransform:
   m_AnchoredPosition: {x: 38.42, y: 13.899994}
   m_SizeDelta: {x: 336.76282, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &640302342794175042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7571650910898396375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08dd583a43c93c94796f8faecd09e352, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  value: {fileID: 11400000, guid: 497c169d82af6264ebccf2e3dce73d9b, type: 2}
+  _slider: {fileID: 2521910247123993986}
+--- !u!114 &4703136037809712216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7571650910898396375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08dd583a43c93c94796f8faecd09e352, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  value: {fileID: 11400000, guid: bb4bb3034c747d5469ee882969a2f3c9, type: 2}
+  _slider: {fileID: 2521910247123993986}
+--- !u!114 &7177900086174443911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7571650910898396375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08dd583a43c93c94796f8faecd09e352, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  value: {fileID: 11400000, guid: 6eb07459de9a2c94599d289d776f8146, type: 2}
+  _slider: {fileID: 2521910247123993986}

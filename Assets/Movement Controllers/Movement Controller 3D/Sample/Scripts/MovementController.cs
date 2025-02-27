@@ -32,6 +32,16 @@ public class MovementController : MovementControllerBase
     [SerializeField] private Transform _cameraRoot;
     private float _defaultCameraHeight;
     private float _defaultRadius;
+    private float deltaSpeedMultiplier = 1f;
+    [SerializeField] private float currentSpeedMultiplier = 1f;
+    [SerializeField] private float maxCurrentSpeedMultiplier = 4f;
+
+    // Добавляем переменную для банихопа
+    [SerializeField] private bool _isBunnyHopping = false;
+    [SerializeField] private float _bunnyHopSpeedMultiplier = 1.2f; // Множитель скорости при банихопе
+    [SerializeField] private float _bunnyHopresetTimer = 1;
+    [SerializeField] private float _bunnyHopresetTimerStep = 1;
+    private float _bunnyHopresetTimerTemp = 1;
     #endregion
 
     #region Constants
@@ -82,6 +92,20 @@ public class MovementController : MovementControllerBase
         Stamina -= _staminaCostPerJump;
         _verticalVelocity = Mathf.Sqrt(Parameters.JumpForce * -2f * Physics.gravity.y);
         _isJumping = true;
+
+        // Активируем банихоп, если игрок стоит на месте
+        if (IsMove)
+        {
+            _isBunnyHopping = true;
+            _bunnyHopresetTimerTemp = _bunnyHopresetTimer;
+        }
+
+        // Увеличиваем скорость при банихопе
+        if (_isBunnyHopping)
+        {
+            deltaSpeedMultiplier *= _bunnyHopSpeedMultiplier;
+            deltaSpeedMultiplier = Mathf.Clamp(deltaSpeedMultiplier * _bunnyHopSpeedMultiplier, currentSpeedMultiplier, maxCurrentSpeedMultiplier);
+        }
     }
 
     public override void Duck()
@@ -257,7 +281,6 @@ public class MovementController : MovementControllerBase
 
     public void FixedUpdate()
     {
-
         if (_isResting)
             _isRun = false;
 
@@ -268,6 +291,17 @@ public class MovementController : MovementControllerBase
             if (_verticalVelocity < 0.0f)
             {
                 _verticalVelocity = -2f;
+            }
+
+            if (_bunnyHopresetTimerTemp != 0)
+                _bunnyHopresetTimerTemp -= _bunnyHopresetTimerStep * Time.fixedDeltaTime;
+
+            _bunnyHopresetTimerTemp = Mathf.Clamp(_bunnyHopresetTimerTemp, 0, _bunnyHopresetTimer);
+
+            if (_bunnyHopresetTimerTemp == 0 && _isBunnyHopping)
+            {
+                _isBunnyHopping = false;
+                deltaSpeedMultiplier = currentSpeedMultiplier;
             }
         }
         else
@@ -283,12 +317,13 @@ public class MovementController : MovementControllerBase
 
         targetDirection = _controller.transform.TransformDirection(targetDirection);
 
-        float currentSpeedMultiplier = 1f;
-        if (!_isDuck && !_isProne && _isRun) currentSpeedMultiplier = Parameters.RunSpeedMultipiler;
-        else if (_isDuck) currentSpeedMultiplier = Parameters.DuckSpeedMultipiler;
-        else if (_isProne) currentSpeedMultiplier = Parameters.ProneSpeedMultipiler;
+        if (!_isDuck && !_isProne && _isRun) deltaSpeedMultiplier = Parameters.RunSpeedMultipiler;
+        else if (_isDuck) deltaSpeedMultiplier = Parameters.DuckSpeedMultipiler;
+        else if (_isProne) deltaSpeedMultiplier = Parameters.ProneSpeedMultipiler;
 
-        Vector3 targetVelocity = targetDirection * Parameters.Speed * currentSpeedMultiplier;
+        
+
+        Vector3 targetVelocity = targetDirection * Parameters.Speed * deltaSpeedMultiplier;
 
         _currentVelocity = Vector3.SmoothDamp(
             _currentVelocity,
@@ -320,10 +355,10 @@ public class MovementController : MovementControllerBase
             // Тратим стамину при беге
             Stamina -= _staminaDrainRatePerSecond * Time.deltaTime;
         }
-        else if ((!_isRun|| !IsMove) && IsGrounded)
+        else if ((!_isRun || !IsMove) && IsGrounded)
         {
             // Восстанавливаем стамину, если не бежим или не двигаемся
-            Stamina += (IsMove?_staminaRegenRatePerSecond:_staminaRegenRatePerSecondNoMove) * Time.deltaTime;
+            Stamina += (IsMove ? _staminaRegenRatePerSecond : _staminaRegenRatePerSecondNoMove) * Time.deltaTime;
         }
 
         // Ограничиваем стамину в пределах [0, MaxStamina]

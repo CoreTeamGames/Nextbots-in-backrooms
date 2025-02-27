@@ -7,7 +7,8 @@ public class MobileControlsUI : MonoBehaviour
 {
     private CanvasGroup _group;
     public int Touches { get; private set; }
-    public bool Interactable => GetComponent<CanvasGroup>().interactable;
+    public bool Interactable => _group.interactable;
+    public CanvasGroup TargetCanvasGroup => _group;
 
     private void Awake()
     {

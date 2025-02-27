@@ -9,11 +9,11 @@ namespace CoreTeamGamesSDK.SettingsService
     public class SettingsValues : ScriptableObject
     {
         #region Variables
-        [SerializeField] private SettingsValueWithName[] _values;
+        [SerializeField] private SettingsValue[] _values;
         #endregion
 
         #region Properties
-        public SettingsValueWithName[] Values => _values;
+        public SettingsValue[] Values => _values;
         #endregion
     }
 }

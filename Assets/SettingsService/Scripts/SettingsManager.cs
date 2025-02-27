@@ -2,10 +2,13 @@
 using UnityEngine;
 using System.IO;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine.SceneManagement;
 
 namespace CoreTeamGamesSDK.SettingsService
 {
-    [AddComponentMenu("CoreTeam Games SDK/Settings/Settings Manager",0)]
+    [AddComponentMenu("CoreTeam Games SDK/Settings/Settings Manager", 0)]
     [DefaultExecutionOrder(-100)]
     public class SettingsManager : MonoBehaviour
     {
@@ -13,20 +16,20 @@ namespace CoreTeamGamesSDK.SettingsService
         [SerializeField] private SettingsValues _defaultValues;
         [SerializeField] private string _fileName = "Settings.json";
         [SerializeField] private bool _loadSettingsOnLevelLoad = true;
-        private static SettingsValueWithName[] _settingsValues = new SettingsValueWithName[0];
+        private static SettingsValue[] _settingsValues = new SettingsValue[0];
         #endregion
 
         #region Properties
         public static SettingsManager Manager { get; private set; }
-        public static SettingsValueWithName[] SettingsValues { get => _settingsValues;}
+        public static SettingsValue[] SettingsValues { get => _settingsValues; }
         #endregion
 
         #region Events
-        public delegate void OnSettingsSaved(SettingsValueWithName[] values);
+        public delegate void OnSettingsSaved(SettingsValue[] values);
         public static OnSettingsSaved OnSettingsSavedEvent;
-        public delegate void OnSettingsUpdates(SettingsValueWithName[] values);
+        public delegate void OnSettingsUpdates(SettingsValue[] values);
         public static OnSettingsUpdates OnSettingsUpdatesEvent;
-        public delegate void OnSettingsLoaded(SettingsValueWithName[] values, bool isDefaultValues);
+        public delegate void OnSettingsLoaded(SettingsValue[] values, bool isDefaultValues);
         public static OnSettingsLoaded OnSettingsLoadedEvent;
         #endregion
 
@@ -41,7 +44,18 @@ namespace CoreTeamGamesSDK.SettingsService
 
             Manager = this;
             DontDestroyOnLoad(Manager);
+            SceneManager.activeSceneChanged += (s1, s2) => { UpdateSettings(); };
+        }
+
+        private void Start()
+        {
             LoadSettings();
+
+        }
+
+        private void OnDestroy()
+        {
+            SceneManager.activeSceneChanged -= (s1, s2) => { UpdateSettings(); };
         }
 
         public static void SaveSettings()
@@ -51,6 +65,7 @@ namespace CoreTeamGamesSDK.SettingsService
                 Debug.LogError("SettingsManager is null!");
                 return;
             }
+
             if (_settingsValues.Length == 0)
                 return;
 
@@ -58,7 +73,18 @@ namespace CoreTeamGamesSDK.SettingsService
             {
                 using (StreamWriter writer = new StreamWriter(stream))
                 {
-                    string file = JsonConvert.SerializeObject(_settingsValues);
+                    Dictionary<string, object> values = new Dictionary<string, object>();
+
+                    foreach (var value in _settingsValues)
+                    {
+                        if (!value.ExcludedRuntimePlatformsForValue.Contains(Application.platform))
+                            values.Add(value.Name, value.Value);
+                    }
+
+                    string file = JsonConvert.SerializeObject(values, Formatting.Indented, new JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Serialize
+                    });
 
                     writer.WriteLine(file);
                 }
@@ -82,45 +108,44 @@ namespace CoreTeamGamesSDK.SettingsService
             if (Manager._defaultValues.Values.Length == 0)
                 return;
 
-            _settingsValues = new SettingsValueWithName[Manager._defaultValues.Values.Length];
+            _settingsValues = new SettingsValue[Manager._defaultValues.Values.Length];
             Array.Copy(Manager._defaultValues.Values, _settingsValues, Manager._defaultValues.Values.Length);
 
             bool loadDefault = true;
 
             if (File.Exists(Path.Combine(Application.persistentDataPath, Manager._fileName)))
             {
-
-                SettingsValueWithName[] temp = new SettingsValueWithName[0];
+                Dictionary<string, object> temp = new Dictionary<string, object>();
 
                 using (FileStream stream = new FileStream(Path.Combine(Application.persistentDataPath, Manager._fileName), FileMode.Open))
                 {
                     using (StreamReader reader = new StreamReader(stream))
                     {
                         string file = reader.ReadToEnd();
-                        temp = JsonConvert.DeserializeObject<SettingsValueWithName[]>(file);
+
+                        temp = JsonConvert.DeserializeObject<Dictionary<string, object>>(file);
                     }
                 }
 
-                if (temp.Length != 0)
+                if (temp.Count != 0)
                 {
                     loadDefault = false;
 
-                    foreach (var item in temp)
+                    foreach (var value in _settingsValues)
                     {
-                        foreach (var value in _settingsValues)
-                        {
-                            if (value.Name == item.Name && value.Value.GetType().Name == item.Value.GetType().Name)
-                                value.Value = item.Value;
-                        }
+                        if (temp.ContainsKey(value.Name))
+                            value.SetValue(temp.Single(keyValuePair => keyValuePair.Key == value.Name).Value);
                     }
                 }
             }
+
             OnSettingsLoadedEvent?.Invoke(_settingsValues, loadDefault);
         }
-    
+
         public static void UpdateSettings()
         {
-            OnSettingsUpdatesEvent?.Invoke(_settingsValues);
+            if (_settingsValues.Length > 0)
+                OnSettingsUpdatesEvent?.Invoke(_settingsValues);
         }
     }
     #endregion

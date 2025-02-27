@@ -1,0 +1,28 @@
+﻿using CoreTeamGamesSDK.SettingsService;
+using UnityEngine;
+
+namespace Game.Settings.Values
+{
+    [CreateAssetMenu(menuName = "Game/SettingsValues/#SCRIPTNAME#")]
+    public class #SCRIPTNAME# : SettingsValue
+    {
+        // OnApply invokes when settings value changes
+        public override void OnApply()
+        {
+
+        }
+
+        // OnApplyWithoutNotify invokes when settings value changes but you need another behaviour
+        public override void OnApplyWithoutNotify()
+        {
+
+        }
+
+        // OnReset invokes when settings value sets to default
+        public override void OnReset()
+        {
+
+        }
+
+    }
+}
